@@ -28,6 +28,7 @@ if __name__ == '__main__':
 
     listRouteur = []
 
+    # Default.rdp is actually the name of the project in GNS3
     lab = gns3fy.Project(name="Default.rdp", connector=gns3_server)
     lab.get()
 
