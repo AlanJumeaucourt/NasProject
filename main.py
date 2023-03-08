@@ -11,11 +11,12 @@ class Routeur:
         self.uid = uid
 
     def __str__(self):
-        return f"""Name: {self.name} 
+        return f"""
+Name: {self.name} 
 Uid : {self.uid}
 typeof: {self.typeof}
 Interfaces : {self.interfacesName}
-"""
+interfacesShortName : {self.interfacesShortName}"""
 
 
 # Project is to setup/automate an entire network with MPLS
@@ -32,30 +33,36 @@ if __name__ == '__main__':
     print(lab.nodes[0].ports[0]['name'])
 
     # Add object router in list with name and uid
+    print("\n    Starting list and create router object in listRouteur")
     for node in lab.nodes:
         listRouteur.append(Routeur(node.name, node.node_id, "Pe"))
-
     for i in range(len(listRouteur)):
         for port in lab.nodes[i].ports:
             listRouteur[i].interfacesName[port['name']] = "Not Connected"
             listRouteur[i].interfacesShortName[port['short_name']] = "Not Connected"
 
+    print(listRouteur[0])
+
+    print("\n    Starting finding the link between routers")
+    for link in lab.links:
+        firstRouterConnected = ""
+        secondRouterConnected = ""
+        firstRouterInterface = ""
+        for routeur in listRouteur:
+            if routeur.uid == link.nodes[0]['node_id']:
+                firstRouterConnected = routeur.name
+            elif routeur.uid == link.nodes[1]['node_id']:
+                secondRouterConnected = routeur.name
+        print(firstRouterConnected + link.nodes[0]['label']['text'] + " is connected to " + secondRouterConnected + link.nodes[1]['label']['text'])
+
+        for routeur in listRouteur:
+            if routeur.name == firstRouterConnected:
+                routeur.interfacesShortName[link.nodes[0]['label']['text']] = secondRouterConnected + "|" + link.nodes[1]['label']['text']
+            elif routeur.name == secondRouterConnected:
+                routeur.interfacesShortName[link.nodes[1]['label']['text']] = firstRouterConnected + "|" + link.nodes[0]['label']['text']
+
 
     print(listRouteur[0])
-    # for router in listRouteur:
-    #     router.interfaces[lab.nodes.ports] = "test"
-
-    print("interface de la premiere connection : " + lab.links[0].nodes[0]['label']['text'])
-    print("interface de la deuxieme connection : " + lab.links[0].nodes[1]['label']['text'])
-    print(lab.links[0].nodes[0]['node_id'])
-    firstRouterConnected = ""
-    secondRouterConnected = ""
-    for routeur in listRouteur:
-        if routeur.uid == lab.links[0].nodes[0]['node_id']:
-            firstRouterConnected = routeur.name
-        elif routeur.uid == lab.links[0].nodes[1]['node_id']:
-            secondRouterConnected = routeur.name
-    print(firstRouterConnected + " is connected to " + secondRouterConnected)
-
+    print(listRouteur[1])
 
     print('Hello World')
