@@ -6,14 +6,15 @@ class Routeur:
     def __init__(self, name, uid, typeof):
         self.name = name
         self.typeof = typeof
-        self.interfaces = {}
+        self.interfacesName = {}
+        self.interfacesShortName = {}
         self.uid = uid
 
     def __str__(self):
         return f"""Name: {self.name} 
 Uid : {self.uid}
 typeof: {self.typeof}
-Interfaces : {self.interfaces}
+Interfaces : {self.interfacesName}
 """
 
 
@@ -36,7 +37,9 @@ if __name__ == '__main__':
 
     for i in range(len(listRouteur)):
         for port in lab.nodes[i].ports:
-            listRouteur[i].interfaces[port['name']] = "Not Connected"
+            listRouteur[i].interfacesName[port['name']] = "Not Connected"
+            listRouteur[i].interfacesShortName[port['short_name']] = "Not Connected"
+
 
     print(listRouteur[0])
     # for router in listRouteur:
