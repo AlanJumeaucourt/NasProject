@@ -24,13 +24,12 @@ interfacesShortName : {self.interfacesShortName}"""
 if __name__ == '__main__':
     # Define the server object to establish the connection
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
-    print(gns3_server.projects_summary(is_print=False))
+    # print(gns3_server.projects_summary(is_print=False))
 
     listRouteur = []
 
     lab = gns3fy.Project(name="Default.rdp", connector=gns3_server)
     lab.get()
-    print(lab.nodes[0].ports[0]['name'])
 
     # Add object router in list with name and uid
     print("\n    Starting list and create router object in listRouteur")
@@ -41,8 +40,9 @@ if __name__ == '__main__':
             listRouteur[i].interfacesName[port['name']] = "Not Connected"
             listRouteur[i].interfacesShortName[port['short_name']] = "Not Connected"
 
-    print(listRouteur[0])
+    # print(listRouteur[0])
 
+    # finding the link between routers
     print("\n    Starting finding the link between routers")
     for link in lab.links:
         firstRouterConnected = ""
@@ -53,7 +53,7 @@ if __name__ == '__main__':
                 firstRouterConnected = routeur.name
             elif routeur.uid == link.nodes[1]['node_id']:
                 secondRouterConnected = routeur.name
-        print(firstRouterConnected + link.nodes[0]['label']['text'] + " is connected to " + secondRouterConnected + link.nodes[1]['label']['text'])
+        # print(firstRouterConnected + link.nodes[0]['label']['text'] + " is connected to " + secondRouterConnected + link.nodes[1]['label']['text'])
 
         for routeur in listRouteur:
             if routeur.name == firstRouterConnected:
@@ -61,8 +61,7 @@ if __name__ == '__main__':
             elif routeur.name == secondRouterConnected:
                 routeur.interfacesShortName[link.nodes[1]['label']['text']] = firstRouterConnected + "|" + link.nodes[0]['label']['text']
 
-
     print(listRouteur[0])
-    print(listRouteur[1])
+    print(listRouteur[8])
 
     print('Hello World')
