@@ -1,13 +1,13 @@
 import gns3fy
 from tabulate import tabulate
+from ipaddress import IPv4Address
 
 
 class Routeur:
     def __init__(self, name, uid, typeof):
         self.name = name
         self.typeof = typeof
-        self.interfacesName = {}
-        self.interfacesShortName = {}
+        self.interfaces = {}
         self.uid = uid
 
     def __str__(self):
@@ -15,8 +15,8 @@ class Routeur:
 Name: {self.name} 
 Uid : {self.uid}
 typeof: {self.typeof}
-Interfaces : {self.interfacesName}
-interfacesShortName : {self.interfacesShortName}"""
+Interfaces : {self.interfaces}
+"""
 
 
 # Project is to setup/automate an entire network with MPLS
@@ -32,6 +32,10 @@ if __name__ == '__main__':
     )
 
     listRouteur = []
+    setReseaux = {}
+
+    for i in range(4, 248, 4):
+        setReseaux[int((i/4)-1)] = IPv4Address("10.16.1." + str(i))
 
     # Default.rdp is actually the name of the project in GNS3
     lab = gns3fy.Project(name="test", connector=gns3_server)
@@ -40,7 +44,7 @@ if __name__ == '__main__':
     # Add object router in list with name and uid
     print("\n    Starting list and create router object in listRouteur")
     for node in lab.nodes:
-        typeof=""
+        typeof = ""
         if node.name.startswith("PE"):
             typeof = "PE"
         elif node.name.startswith("P"):
@@ -53,32 +57,57 @@ if __name__ == '__main__':
     # Add interface of router
     for i in range(len(listRouteur)):
         for port in lab.nodes[i].ports:
-            listRouteur[i].interfacesName[port['name']] = "Not Connected"
-            listRouteur[i].interfacesShortName[port['short_name']] = "Not Connected"
+            # Commented because no need for long name, maybe will be usefull later in project
+            # listRouteur[i].interfaces[port['name']] = {}
+            # listRouteur[i].interfaces[port['name']]['isConnected'] = "false"
+            # listRouteur[i].interfaces[port['name']]['shortName'] = port['short_name']
+            listRouteur[i].interfaces[port['short_name']] = {}
+            listRouteur[i].interfaces[port['short_name']]['isConnected'] = "false"
 
-    # print(listRouteur[0])
+    print(listRouteur[0])
 
     # finding the link between routers
     print("\n    Starting finding the link between routers")
-    for link in lab.links:
+    for i, link in enumerate(lab.links):
         firstRouterConnected = ""
         secondRouterConnected = ""
         firstRouterInterface = ""
+        networkIp = ""
+        firstRouterIp = ""
+        SecondRouterIp = ""
         for routeur in listRouteur:
             if routeur.uid == link.nodes[0]['node_id']:
                 firstRouterConnected = routeur.name
             elif routeur.uid == link.nodes[1]['node_id']:
                 secondRouterConnected = routeur.name
-        # print(firstRouterConnected + link.nodes[0]['label']['text'] + " is connected to " + secondRouterConnected + link.nodes[1]['label']['text'])
+        print(firstRouterConnected + link.nodes[0]['label']['text'] + " is connected to " + secondRouterConnected +
+              link.nodes[1]['label']['text'])
+        networkIp = setReseaux[i]
+        firstRouterIp = setReseaux[i]+1
+        SecondRouterIp = setReseaux[i]+2
 
         for routeur in listRouteur:
             if routeur.name == firstRouterConnected:
-                routeur.interfacesShortName[link.nodes[0]['label']['text']] = secondRouterConnected + "|" + link.nodes[1]['label']['text']
-            elif routeur.name == secondRouterConnected:
-                routeur.interfacesShortName[link.nodes[1]['label']['text']] = firstRouterConnected + "|" + link.nodes[0]['label']['text']
+                for interfaceName in routeur.interfaces:
+                    if interfaceName == link.nodes[0]['label']['text']:
+                        routeur.interfaces[interfaceName]['isConnected'] = "true"
+                        routeur.interfaces[interfaceName]['routerConnectedName'] = secondRouterConnected
+                        routeur.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[1]['label'][
+                            'text']
+                        routeur.interfaces[interfaceName]['RouterConnectedIp'] = SecondRouterIp
+                        routeur.interfaces[interfaceName]['ipNetwork'] = networkIp
+                        routeur.interfaces[interfaceName]['ip'] = firstRouterIp
 
-    print(listRouteur[2])
-    print(listRouteur[8])
+            elif routeur.name == secondRouterConnected:
+                for interfaceName in routeur.interfaces:
+                    if interfaceName == link.nodes[1]['label']['text']:
+                        routeur.interfaces[interfaceName]['isConnected'] = "true"
+                        routeur.interfaces[interfaceName]['routerConnectedName'] = firstRouterConnected
+                        routeur.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[0]['label'][
+                            'text']
+                        routeur.interfaces[interfaceName]['RouterConnectedIp'] = firstRouterIp
+                        routeur.interfaces[interfaceName]['ipNetwork'] = networkIp
+                        routeur.interfaces[interfaceName]['ip'] = SecondRouterIp
 
     for routeur in listRouteur:
         print(routeur)
