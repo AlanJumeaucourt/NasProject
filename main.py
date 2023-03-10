@@ -7,7 +7,7 @@ from ipaddress import IPv4Address
 import telnetlib
 
 
-class Routeur:
+class Router:
     def __init__(self, name, uid, typeof):
         self.name = name
         self.typeof = typeof
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         )
     )
 
-    listRouteur = []
+    listRouter = []
     setReseaux = {}
 
     for i in range(4, 248, 4):
@@ -66,19 +66,19 @@ if __name__ == '__main__':
     # Add object router in list with name and uid
     print("\nStarting list and create router object in listRouteur")
     for node in lab.nodes:
-        listRouteur.append(Routeur(node.name, node.node_id, whichTypeOfRouterFromName(node.name)))
+        listRouter.append(Router(node.name, node.node_id, whichTypeOfRouterFromName(node.name)))
 
     # Add interface of router
-    for i in range(len(listRouteur)):
+    for i in range(len(listRouter)):
         for port in lab.nodes[i].ports:
             # Commented because no need for long name, maybe will be usefull later in project
             # listRouteur[i].interfaces[port['name']] = {}
             # listRouteur[i].interfaces[port['name']]['isConnected'] = "false"
             # listRouteur[i].interfaces[port['name']]['shortName'] = port['short_name']
-            listRouteur[i].interfaces[port['short_name']] = {}
-            listRouteur[i].interfaces[port['short_name']]['isConnected'] = "false"
+            listRouter[i].interfaces[port['short_name']] = {}
+            listRouter[i].interfaces[port['short_name']]['isConnected'] = "false"
 
-    print(listRouteur[0])
+    print(listRouter[0])
 
     # finding the link between routers
     print("\nStarting finding the link between routers")
@@ -89,11 +89,11 @@ if __name__ == '__main__':
         networkIp = ""
         firstRouterIp = ""
         SecondRouterIp = ""
-        for routeur in listRouteur:
-            if routeur.uid == link.nodes[0]['node_id']:
-                firstRouterConnected = routeur.name
-            elif routeur.uid == link.nodes[1]['node_id']:
-                secondRouterConnected = routeur.name
+        for router in listRouter:
+            if router.uid == link.nodes[0]['node_id']:
+                firstRouterConnected = router.name
+            elif router.uid == link.nodes[1]['node_id']:
+                secondRouterConnected = router.name
         print("    " + firstRouterConnected + link.nodes[0]['label']['text'] + " is connected to " + secondRouterConnected +
               link.nodes[1]['label']['text'])
         networkIp = setReseaux[i]
@@ -101,70 +101,67 @@ if __name__ == '__main__':
         SecondRouterIp = setReseaux[i]+2
 
 
-        for routeur in listRouteur:
-            if routeur.name == firstRouterConnected:
-                for interfaceName in routeur.interfaces:
+        for router in listRouter:
+            if router.name == firstRouterConnected:
+                for interfaceName in router.interfaces:
                     if interfaceName == link.nodes[0]['label']['text']:
-                        routeur.interfaces[interfaceName]['isConnected'] = "true"
-                        routeur.interfaces[interfaceName]['routerConnectedName'] = secondRouterConnected
-                        routeur.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[1]['label'][
+                        router.interfaces[interfaceName]['isConnected'] = "true"
+                        router.interfaces[interfaceName]['routerConnectedName'] = secondRouterConnected
+                        router.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[1]['label'][
                             'text']
-                        routeur.interfaces[interfaceName]['RouterConnectedIp'] = SecondRouterIp
-                        routeur.interfaces[interfaceName]['RouterConnectedTypeof'] = whichTypeOfRouterFromName(secondRouterConnected)
-                        routeur.interfaces[interfaceName]['ipNetwork'] = networkIp
-                        routeur.interfaces[interfaceName]['ip'] = firstRouterIp
+                        router.interfaces[interfaceName]['RouterConnectedIp'] = SecondRouterIp
+                        router.interfaces[interfaceName]['RouterConnectedTypeof'] = whichTypeOfRouterFromName(secondRouterConnected)
+                        router.interfaces[interfaceName]['ipNetwork'] = networkIp
+                        router.interfaces[interfaceName]['ip'] = firstRouterIp
 
-            elif routeur.name == secondRouterConnected:
-                for interfaceName in routeur.interfaces:
+            elif router.name == secondRouterConnected:
+                for interfaceName in router.interfaces:
                     if interfaceName == link.nodes[1]['label']['text']:
-                        routeur.interfaces[interfaceName]['isConnected'] = "true"
-                        routeur.interfaces[interfaceName]['routerConnectedName'] = firstRouterConnected
-                        routeur.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[0]['label'][
+                        router.interfaces[interfaceName]['isConnected'] = "true"
+                        router.interfaces[interfaceName]['routerConnectedName'] = firstRouterConnected
+                        router.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[0]['label'][
                             'text']
-                        routeur.interfaces[interfaceName]['RouterConnectedIp'] = firstRouterIp
-                        routeur.interfaces[interfaceName]['RouterConnectedTypeof'] = whichTypeOfRouterFromName(firstRouterConnected)
-                        routeur.interfaces[interfaceName]['ipNetwork'] = networkIp
-                        routeur.interfaces[interfaceName]['ip'] = SecondRouterIp
-
-    for routeur in listRouteur:
-        routeur.showInfos()
-    print('Hello World')
-
+                        router.interfaces[interfaceName]['RouterConnectedIp'] = firstRouterIp
+                        router.interfaces[interfaceName]['RouterConnectedTypeof'] = whichTypeOfRouterFromName(firstRouterConnected)
+                        router.interfaces[interfaceName]['ipNetwork'] = networkIp
+                        router.interfaces[interfaceName]['ip'] = SecondRouterIp
 
     # Telnet things
 
-    for routeur in listRouteur:
-        tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[routeur.name]["console_port"])
+    for router in listRouter:
+        tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
         tn.write(b"\r\n")
         tn.write(b"end\r\n")
         tn.write(b"conf t \r\n")
         tn.write(b"router ospf 10\r\n")
         tn.write(b"router ospf 11\r\n")
 
-        numberInRouteurName = str(re.findall(r'\d+', routeur.name)[0])
+        numberInRouteurName = str(re.findall(r'\d+', router.name)[0])
         tn.write(b"int loopback0\r\n")
         tn.write(b"ip address 200.0.0." + str(numberInRouteurName).encode('ascii') + b" 255.255.255.255" + b"\r\n")
         time.sleep(0.1)
 
-
-        print(routeur.name)
-        for interfaceName in routeur.interfaces:
-            if routeur.interfaces[interfaceName]["isConnected"] == "true":
+        for interfaceName in router.interfaces:
+            if router.interfaces[interfaceName]["isConnected"] == "true":
                 tn.write(b"interface " + interfaceName.encode('ascii') + b"\r\n")
                 tn.write(b"no shutdown \r\n")
-                tn.write(b"ip address " + str(routeur.interfaces[interfaceName]["ip"]).encode('ascii') + b" 255.255.255.252" + b"\r\n")
+                tn.write(b"ip address " + str(router.interfaces[interfaceName]["ip"]).encode('ascii') + b" 255.255.255.252" + b"\r\n")
 
-                if routeur.typeof == "P":
+                if router.typeof == "P":
                     tn.write(b"ip ospf 10 area 0 \r\n")
-                elif routeur.typeof == "CE":
+                elif router.typeof == "CE":
                     tn.write(b"ip ospf 11 area 1 \r\n")
-                elif routeur.typeof == "PE":
-                    if routeur.interfaces[interfaceName]["RouterConnectedTypeof"] == "PE":
+                elif router.typeof == "PE":
+                    if router.interfaces[interfaceName]["RouterConnectedTypeof"] == "PE":
                         tn.write(b"ip ospf 10 area 0 \r\n")
-                    elif routeur.interfaces[interfaceName]["RouterConnectedTypeof"] == "P":
+                    elif router.interfaces[interfaceName]["RouterConnectedTypeof"] == "P":
                         tn.write(b"ip ospf 10 area 0 \r\n")
-                    elif routeur.interfaces[interfaceName]["RouterConnectedTypeof"] == "CE":
+                    elif router.interfaces[interfaceName]["RouterConnectedTypeof"] == "CE":
                         tn.write(b"ip ospf 11 area 1 \r\n")
 
                 time.sleep(0.1)
 
+    for router in listRouter:
+        router.showInfos()
+
+    print('Hello World')
