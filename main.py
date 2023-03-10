@@ -15,8 +15,17 @@ class Routeur:
 Name: {self.name} 
 Uid : {self.uid}
 typeof: {self.typeof}
-Interfaces : {self.interfaces}
+interfaces : {self.interfaces}
 """
+    def showInfos(self):
+        print("")
+        print(f"--------------------------------Name: {self.name}--------------------------------")
+        print(f"Uid: {self.uid}")
+        print(f"typeof: {self.typeof}")
+        for interfaceName in self.interfaces:
+            print(f"interfaces : {interfaceName}")
+            for key in self.interfaces[interfaceName]:
+                print(f"    {key} : {self.interfaces[interfaceName][key]}")
 
 
 # Project is to setup/automate an entire network with MPLS
@@ -110,6 +119,5 @@ if __name__ == '__main__':
                         routeur.interfaces[interfaceName]['ip'] = SecondRouterIp
 
     for routeur in listRouteur:
-        print(routeur)
-
+        routeur.showInfos()
     print('Hello World')
