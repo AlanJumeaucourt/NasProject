@@ -160,6 +160,36 @@ if __name__ == '__main__':
                         tn.write(b"ip ospf 11 area 1 \r\n")
 
                 time.sleep(0.1)
+    # From here, OSPF work over PE and P router, all can ping each other
+
+    # MPLS :
+    tn.write(b"router ospf 11\r\n")
+
+    for router in listRouter:
+        tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
+        tn.write(b"\r\n")
+        tn.write(b"end\r\n")
+        tn.write(b"conf t \r\n")
+        tn.write(b"ip cef\r\n")
+        time.sleep(0.1)
+
+        for interfaceName in router.interfaces:
+            if router.interfaces[interfaceName]["isConnected"] == "true":
+                tn.write(b"interface " + interfaceName.encode('ascii') + b"\r\n")
+                if router.typeof == "P":
+                    tn.write(b"mpls ip \r\n")
+                elif router.typeof == "CE":
+                    pass # CE device dont need MPLS
+                elif router.typeof == "PE":
+                    if router.interfaces[interfaceName]["RouterConnectedTypeof"] == "PE":
+                        tn.write(b"mpls ip \r\n")
+                    elif router.interfaces[interfaceName]["RouterConnectedTypeof"] == "P":
+                        tn.write(b"mpls ip \r\n")
+                    elif router.interfaces[interfaceName]["RouterConnectedTypeof"] == "CE":
+                        pass # CE device dont need MPLS
+        time.sleep(0.1)
+
+
 
     for router in listRouter:
         router.showInfos()
