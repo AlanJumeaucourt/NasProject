@@ -32,6 +32,14 @@ interfaces : {self.interfaces}
                 print(f"    {key} : {self.interfaces[interfaceName][key]}")
 
 
+def whichTypeOfRouterFromName(name):
+    if name.startswith("PE"):
+        return "PE"
+    elif name.startswith("P"):
+        return "P"
+    elif name.startswith("CE"):
+        return "CE"
+
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
 if __name__ == '__main__':
@@ -58,14 +66,7 @@ if __name__ == '__main__':
     # Add object router in list with name and uid
     print("\nStarting list and create router object in listRouteur")
     for node in lab.nodes:
-        typeof = ""
-        if node.name.startswith("PE"):
-            typeof = "PE"
-        elif node.name.startswith("P"):
-            typeof = "P"
-        elif node.name.startswith("CE"):
-            typeof = "CE"
-        listRouteur.append(Routeur(node.name, node.node_id, typeof))
+        listRouteur.append(Routeur(node.name, node.node_id, whichTypeOfRouterFromName(node.name)))
 
     # Add interface of router
     for i in range(len(listRouteur)):
@@ -88,15 +89,11 @@ if __name__ == '__main__':
         networkIp = ""
         firstRouterIp = ""
         SecondRouterIp = ""
-        firstRouterTypeOf = ""
-        secondRouterTypeOf = ""
         for routeur in listRouteur:
             if routeur.uid == link.nodes[0]['node_id']:
                 firstRouterConnected = routeur.name
-                firstRouterTypeOf = routeur.typeof
             elif routeur.uid == link.nodes[1]['node_id']:
                 secondRouterConnected = routeur.name
-                secondRouterTypeOf = routeur.typeof
         print("    " + firstRouterConnected + link.nodes[0]['label']['text'] + " is connected to " + secondRouterConnected +
               link.nodes[1]['label']['text'])
         networkIp = setReseaux[i]
@@ -113,7 +110,7 @@ if __name__ == '__main__':
                         routeur.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[1]['label'][
                             'text']
                         routeur.interfaces[interfaceName]['RouterConnectedIp'] = SecondRouterIp
-                        routeur.interfaces[interfaceName]['RouterConnectedTypeof'] = secondRouterTypeOf
+                        routeur.interfaces[interfaceName]['RouterConnectedTypeof'] = whichTypeOfRouterFromName(secondRouterConnected)
                         routeur.interfaces[interfaceName]['ipNetwork'] = networkIp
                         routeur.interfaces[interfaceName]['ip'] = firstRouterIp
 
@@ -125,7 +122,7 @@ if __name__ == '__main__':
                         routeur.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[0]['label'][
                             'text']
                         routeur.interfaces[interfaceName]['RouterConnectedIp'] = firstRouterIp
-                        routeur.interfaces[interfaceName]['RouterConnectedTypeof'] = firstRouterTypeOf
+                        routeur.interfaces[interfaceName]['RouterConnectedTypeof'] = whichTypeOfRouterFromName(firstRouterConnected)
                         routeur.interfaces[interfaceName]['ipNetwork'] = networkIp
                         routeur.interfaces[interfaceName]['ip'] = SecondRouterIp
 
