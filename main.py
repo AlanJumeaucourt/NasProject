@@ -1,6 +1,9 @@
+import time
+
 import gns3fy
 from tabulate import tabulate
 from ipaddress import IPv4Address
+import telnetlib
 
 
 class Routeur:
@@ -31,6 +34,7 @@ interfaces : {self.interfaces}
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
 if __name__ == '__main__':
+
     # Define the server object to establish the connection
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
     print(
@@ -47,7 +51,7 @@ if __name__ == '__main__':
         setReseaux[int((i/4)-1)] = IPv4Address("10.16.1." + str(i))
 
     # Default.rdp is actually the name of the project in GNS3
-    lab = gns3fy.Project(name="test", connector=gns3_server)
+    lab = gns3fy.Project(name="Default.rdp", connector=gns3_server)
     lab.get()
 
     # Add object router in list with name and uid
@@ -121,3 +125,34 @@ if __name__ == '__main__':
     for routeur in listRouteur:
         routeur.showInfos()
     print('Hello World')
+
+
+    # Telnet things
+
+    tn = telnetlib.Telnet("localhost",5000)
+    tn.write(b"\r\n")
+    tn.write(b"end\r\n")
+    tn.write(b"conf t \r")
+    tn.write(b"interface fa0/0\r")
+    tn.write(b"ip address 10.181.23.1 255.255.255.0\r")
+    tn.write(b"no shutdown\r")
+    tn.write(b"\r\n")
+
+
+    for routeur in listRouteur:
+        tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[routeur.name]["console_port"])
+        tn.write(b"\r\n")
+        tn.write(b"end\r\n")
+        tn.write(b"conf t \r")
+
+        print(routeur.name)
+        for interfaceName in routeur.interfaces:
+            if routeur.interfaces[interfaceName]["isConnected"] == "true":
+                tn.write(b"interface " + interfaceName.encode('ascii') + b"\r\n")
+                tn.write(b"no shutdown \r\n")
+                tn.write(b"ip address " + str(routeur.interfaces[interfaceName]["ip"]).encode('ascii') + b" 255.255.255.252" + b"\r\n")
+                time.sleep(0.1)
+
+
+
+    print(lab.nodes_inventory()["CER1"]["console_port"])
