@@ -201,6 +201,11 @@ if __name__ == '__main__':
             if router.interfaces[interfaceName]["isConnected"] == "true":
                 tn.write(b"neighbor " + str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode('ascii') + b" remote-as " + router.interfaces[interfaceName]["RouterConnectedAsnumber"].encode('ascii') + b"\r\n")
         time.sleep(0.1)
+        tn.write(b"address-family ipv4 unicast \r\n")
+        for interfaceName in router.interfaces:
+            if router.interfaces[interfaceName]["isConnected"] == "true":
+                tn.write(b"network " + str(router.interfaces[interfaceName]["ipNetwork"]).encode('ascii') + b" mask 255.255.255.252 " + b"\r\n")
+        time.sleep(0.1)
 
     # MPLS :
     tn.write(b"router ospf 11\r\n")
