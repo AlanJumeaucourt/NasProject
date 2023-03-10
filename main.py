@@ -1,3 +1,4 @@
+import re
 import time
 
 import gns3fy
@@ -51,11 +52,11 @@ if __name__ == '__main__':
         setReseaux[int((i/4)-1)] = IPv4Address("10.16.1." + str(i))
 
     # Default.rdp is actually the name of the project in GNS3
-    lab = gns3fy.Project(name="Default.rdp", connector=gns3_server)
+    lab = gns3fy.Project(name="test", connector=gns3_server)
     lab.get()
 
     # Add object router in list with name and uid
-    print("\n    Starting list and create router object in listRouteur")
+    print("\nStarting list and create router object in listRouteur")
     for node in lab.nodes:
         typeof = ""
         if node.name.startswith("PE"):
@@ -64,7 +65,6 @@ if __name__ == '__main__':
             typeof = "P"
         elif node.name.startswith("CE"):
             typeof = "CE"
-        print(typeof)
         listRouteur.append(Routeur(node.name, node.node_id, typeof))
 
     # Add interface of router
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     print(listRouteur[0])
 
     # finding the link between routers
-    print("\n    Starting finding the link between routers")
+    print("\nStarting finding the link between routers")
     for i, link in enumerate(lab.links):
         firstRouterConnected = ""
         secondRouterConnected = ""
@@ -88,16 +88,21 @@ if __name__ == '__main__':
         networkIp = ""
         firstRouterIp = ""
         SecondRouterIp = ""
+        firstRouterTypeOf = ""
+        secondRouterTypeOf = ""
         for routeur in listRouteur:
             if routeur.uid == link.nodes[0]['node_id']:
                 firstRouterConnected = routeur.name
+                firstRouterTypeOf = routeur.typeof
             elif routeur.uid == link.nodes[1]['node_id']:
                 secondRouterConnected = routeur.name
-        print(firstRouterConnected + link.nodes[0]['label']['text'] + " is connected to " + secondRouterConnected +
+                secondRouterTypeOf = routeur.typeof
+        print("    " + firstRouterConnected + link.nodes[0]['label']['text'] + " is connected to " + secondRouterConnected +
               link.nodes[1]['label']['text'])
         networkIp = setReseaux[i]
         firstRouterIp = setReseaux[i]+1
         SecondRouterIp = setReseaux[i]+2
+
 
         for routeur in listRouteur:
             if routeur.name == firstRouterConnected:
@@ -108,6 +113,7 @@ if __name__ == '__main__':
                         routeur.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[1]['label'][
                             'text']
                         routeur.interfaces[interfaceName]['RouterConnectedIp'] = SecondRouterIp
+                        routeur.interfaces[interfaceName]['RouterConnectedTypeof'] = secondRouterTypeOf
                         routeur.interfaces[interfaceName]['ipNetwork'] = networkIp
                         routeur.interfaces[interfaceName]['ip'] = firstRouterIp
 
@@ -119,6 +125,7 @@ if __name__ == '__main__':
                         routeur.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[0]['label'][
                             'text']
                         routeur.interfaces[interfaceName]['RouterConnectedIp'] = firstRouterIp
+                        routeur.interfaces[interfaceName]['RouterConnectedTypeof'] = firstRouterTypeOf
                         routeur.interfaces[interfaceName]['ipNetwork'] = networkIp
                         routeur.interfaces[interfaceName]['ip'] = SecondRouterIp
 
@@ -129,21 +136,19 @@ if __name__ == '__main__':
 
     # Telnet things
 
-    tn = telnetlib.Telnet("localhost",5000)
-    tn.write(b"\r\n")
-    tn.write(b"end\r\n")
-    tn.write(b"conf t \r")
-    tn.write(b"interface fa0/0\r")
-    tn.write(b"ip address 10.181.23.1 255.255.255.0\r")
-    tn.write(b"no shutdown\r")
-    tn.write(b"\r\n")
-
-
     for routeur in listRouteur:
         tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[routeur.name]["console_port"])
         tn.write(b"\r\n")
         tn.write(b"end\r\n")
-        tn.write(b"conf t \r")
+        tn.write(b"conf t \r\n")
+        tn.write(b"router ospf 10\r\n")
+        tn.write(b"router ospf 11\r\n")
+
+        numberInRouteurName = str(re.findall(r'\d+', routeur.name)[0])
+        tn.write(b"int loopback0\r\n")
+        tn.write(b"ip address 200.0.0." + str(numberInRouteurName).encode('ascii') + b" 255.255.255.255" + b"\r\n")
+        time.sleep(0.1)
+
 
         print(routeur.name)
         for interfaceName in routeur.interfaces:
@@ -151,8 +156,18 @@ if __name__ == '__main__':
                 tn.write(b"interface " + interfaceName.encode('ascii') + b"\r\n")
                 tn.write(b"no shutdown \r\n")
                 tn.write(b"ip address " + str(routeur.interfaces[interfaceName]["ip"]).encode('ascii') + b" 255.255.255.252" + b"\r\n")
+
+                if routeur.typeof == "P":
+                    tn.write(b"ip ospf 10 area 0 \r\n")
+                elif routeur.typeof == "CE":
+                    tn.write(b"ip ospf 11 area 1 \r\n")
+                elif routeur.typeof == "PE":
+                    if routeur.interfaces[interfaceName]["RouterConnectedTypeof"] == "PE":
+                        tn.write(b"ip ospf 10 area 0 \r\n")
+                    elif routeur.interfaces[interfaceName]["RouterConnectedTypeof"] == "P":
+                        tn.write(b"ip ospf 10 area 0 \r\n")
+                    elif routeur.interfaces[interfaceName]["RouterConnectedTypeof"] == "CE":
+                        tn.write(b"ip ospf 11 area 1 \r\n")
+
                 time.sleep(0.1)
 
-
-
-    print(lab.nodes_inventory()["CER1"]["console_port"])

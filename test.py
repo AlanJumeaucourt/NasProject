@@ -1,3 +1,4 @@
+import re
 from ipaddress import IPv4Address
 if __name__ == '__main__':
     interface={}
@@ -11,3 +12,4 @@ if __name__ == '__main__':
 
     ip = IPv4Address('192.0.2.1')
     print(ip)
+    print(re.findall(r'\d+', "PER1"))
