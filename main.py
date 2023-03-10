@@ -13,6 +13,7 @@ class Router:
         self.typeof = typeof
         self.interfaces = {}
         self.uid = uid
+        self.asnumber = ""
 
     def __str__(self):
         return f"""
@@ -20,12 +21,15 @@ Name: {self.name}
 Uid : {self.uid}
 typeof: {self.typeof}
 interfaces : {self.interfaces}
+asnumber  {self.asnumber}
 """
+
     def showInfos(self):
         print("")
         print(f"--------------------------------Name: {self.name}--------------------------------")
         print(f"Uid: {self.uid}")
         print(f"typeof: {self.typeof}")
+        print(f"asnumber: {self.asnumber}")
         for interfaceName in self.interfaces:
             print(f"interfaces : {interfaceName}")
             for key in self.interfaces[interfaceName]:
@@ -39,6 +43,7 @@ def whichTypeOfRouterFromName(name):
         return "P"
     elif name.startswith("CE"):
         return "CE"
+
 
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
@@ -57,7 +62,7 @@ if __name__ == '__main__':
     setReseaux = {}
 
     for i in range(4, 248, 4):
-        setReseaux[int((i/4)-1)] = IPv4Address("10.16.1." + str(i))
+        setReseaux[int((i / 4) - 1)] = IPv4Address("10.16.1." + str(i))
 
     # Default.rdp is actually the name of the project in GNS3
     lab = gns3fy.Project(name="test", connector=gns3_server)
@@ -80,6 +85,18 @@ if __name__ == '__main__':
 
     print(listRouter[0])
 
+    # Add BGP AS
+    for router in listRouter:
+        if router.typeof == "PE":
+            router.asnumber = "1337"
+        elif router.typeof == "P":
+            router.asnumber = "1337"
+        elif router.typeof == "CE":
+            if any([_ in router.name for _ in ["R1", "R2"]]):
+                router.asnumber = "455"
+            elif any([_ in router.name for _ in ["R3", "R4"]]):
+                router.asnumber = "8008"
+
     # finding the link between routers
     print("\nStarting finding the link between routers")
     for i, link in enumerate(lab.links):
@@ -88,18 +105,23 @@ if __name__ == '__main__':
         firstRouterInterface = ""
         networkIp = ""
         firstRouterIp = ""
-        SecondRouterIp = ""
+        secondRouterIp = ""
+        firstRouterAsnumber = ""
+        secondRouterAsnumber = ""
+
         for router in listRouter:
             if router.uid == link.nodes[0]['node_id']:
                 firstRouterConnected = router.name
+                firstRouterAsnumber = router.asnumber
             elif router.uid == link.nodes[1]['node_id']:
                 secondRouterConnected = router.name
-        print("    " + firstRouterConnected + link.nodes[0]['label']['text'] + " is connected to " + secondRouterConnected +
+                secondRouterAsnumber = router.asnumber
+        print("    " + firstRouterConnected + link.nodes[0]['label'][
+            'text'] + " is connected to " + secondRouterConnected +
               link.nodes[1]['label']['text'])
         networkIp = setReseaux[i]
-        firstRouterIp = setReseaux[i]+1
-        SecondRouterIp = setReseaux[i]+2
-
+        firstRouterIp = setReseaux[i] + 1
+        secondRouterIp = setReseaux[i] + 2
 
         for router in listRouter:
             if router.name == firstRouterConnected:
@@ -109,8 +131,10 @@ if __name__ == '__main__':
                         router.interfaces[interfaceName]['routerConnectedName'] = secondRouterConnected
                         router.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[1]['label'][
                             'text']
-                        router.interfaces[interfaceName]['RouterConnectedIp'] = SecondRouterIp
-                        router.interfaces[interfaceName]['RouterConnectedTypeof'] = whichTypeOfRouterFromName(secondRouterConnected)
+                        router.interfaces[interfaceName]['RouterConnectedIp'] = secondRouterIp
+                        router.interfaces[interfaceName]['RouterConnectedTypeof'] = whichTypeOfRouterFromName(
+                            secondRouterConnected)
+                        router.interfaces[interfaceName]['RouterConnectedAsnumber'] = secondRouterAsnumber
                         router.interfaces[interfaceName]['ipNetwork'] = networkIp
                         router.interfaces[interfaceName]['ip'] = firstRouterIp
 
@@ -121,13 +145,14 @@ if __name__ == '__main__':
                         router.interfaces[interfaceName]['routerConnectedName'] = firstRouterConnected
                         router.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[0]['label'][
                             'text']
+                        router.interfaces[interfaceName]['RouterConnectedAsnumber'] = firstRouterAsnumber
                         router.interfaces[interfaceName]['RouterConnectedIp'] = firstRouterIp
-                        router.interfaces[interfaceName]['RouterConnectedTypeof'] = whichTypeOfRouterFromName(firstRouterConnected)
+                        router.interfaces[interfaceName]['RouterConnectedTypeof'] = whichTypeOfRouterFromName(
+                            firstRouterConnected)
                         router.interfaces[interfaceName]['ipNetwork'] = networkIp
-                        router.interfaces[interfaceName]['ip'] = SecondRouterIp
+                        router.interfaces[interfaceName]['ip'] = secondRouterIp
 
-    # Telnet things
-
+    # OSPF
     for router in listRouter:
         tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
         tn.write(b"\r\n")
@@ -136,16 +161,18 @@ if __name__ == '__main__':
         tn.write(b"router ospf 10\r\n")
         tn.write(b"router ospf 11\r\n")
 
-        numberInRouteurName = str(re.findall(r'\d+', router.name)[0])
-        tn.write(b"int loopback0\r\n")
-        tn.write(b"ip address 200.0.0." + str(numberInRouteurName).encode('ascii') + b" 255.255.255.255" + b"\r\n")
+        # WIP Loopback design to be defined, below code is not functional anymore
+        # numberInRouteurName = str(re.findall(r'\d+', router.name)[0])
+        # tn.write(b"int loopback0\r\n")
+        # tn.write(b"ip address 200.0.0." + str(numberInRouteurName).encode('ascii') + b" 255.255.255.255" + b"\r\n")
         time.sleep(0.1)
 
         for interfaceName in router.interfaces:
             if router.interfaces[interfaceName]["isConnected"] == "true":
                 tn.write(b"interface " + interfaceName.encode('ascii') + b"\r\n")
                 tn.write(b"no shutdown \r\n")
-                tn.write(b"ip address " + str(router.interfaces[interfaceName]["ip"]).encode('ascii') + b" 255.255.255.252" + b"\r\n")
+                tn.write(b"ip address " + str(router.interfaces[interfaceName]["ip"]).encode(
+                    'ascii') + b" 255.255.255.252" + b"\r\n")
 
                 if router.typeof == "P":
                     tn.write(b"ip ospf 10 area 0 \r\n")
@@ -161,6 +188,19 @@ if __name__ == '__main__':
 
                 time.sleep(0.1)
     # From here, OSPF work over PE and P router, all can ping each other
+
+    # BGP :
+    for router in listRouter:
+        tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
+        tn.write(b"\r\n")
+        tn.write(b"end\r\n")
+        tn.write(b"conf t \r\n")
+        time.sleep(0.1)
+        tn.write(b"router bgp " + router.asnumber.encode('ascii') + b"\r\n")
+        for interfaceName in router.interfaces:
+            if router.interfaces[interfaceName]["isConnected"] == "true":
+                tn.write(b"neighbor " + str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode('ascii') + b" remote-as " + router.interfaces[interfaceName]["RouterConnectedAsnumber"].encode('ascii') + b"\r\n")
+        time.sleep(0.1)
 
     # MPLS :
     tn.write(b"router ospf 11\r\n")
@@ -179,17 +219,15 @@ if __name__ == '__main__':
                 if router.typeof == "P":
                     tn.write(b"mpls ip \r\n")
                 elif router.typeof == "CE":
-                    pass # CE device dont need MPLS
+                    pass  # CE device dont need MPLS
                 elif router.typeof == "PE":
                     if router.interfaces[interfaceName]["RouterConnectedTypeof"] == "PE":
                         tn.write(b"mpls ip \r\n")
                     elif router.interfaces[interfaceName]["RouterConnectedTypeof"] == "P":
                         tn.write(b"mpls ip \r\n")
                     elif router.interfaces[interfaceName]["RouterConnectedTypeof"] == "CE":
-                        pass # CE device dont need MPLS
+                        pass  # CE device dont need MPLS
         time.sleep(0.1)
-
-
 
     for router in listRouter:
         router.showInfos()
