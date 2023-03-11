@@ -161,10 +161,7 @@ if __name__ == '__main__':
         tn.write(b"router ospf 10\r\n")
         tn.write(b"router ospf 11\r\n")
 
-        # WIP Loopback design to be defined, below code is not functional anymore
-        # numberInRouteurName = str(re.findall(r'\d+', router.name)[0])
-        # tn.write(b"int loopback0\r\n")
-        # tn.write(b"ip address 200.0.0." + str(numberInRouteurName).encode('ascii') + b" 255.255.255.255" + b"\r\n")
+        # Loopback address attribution
         tn.write(b"int loopback0\r\n")
         numberInRouteurName = str(re.findall(r'\d+', router.name)[0])
         if router.typeof == "P":
@@ -177,6 +174,7 @@ if __name__ == '__main__':
 
         time.sleep(0.1)
 
+        # Set interface connected to 'no shutdown' and add ospf area
         for interfaceName in router.interfaces:
             if router.interfaces[interfaceName]["isConnected"] == "true":
                 tn.write(b"interface " + interfaceName.encode('ascii') + b"\r\n")
