@@ -165,6 +165,16 @@ if __name__ == '__main__':
         # numberInRouteurName = str(re.findall(r'\d+', router.name)[0])
         # tn.write(b"int loopback0\r\n")
         # tn.write(b"ip address 200.0.0." + str(numberInRouteurName).encode('ascii') + b" 255.255.255.255" + b"\r\n")
+        tn.write(b"int loopback0\r\n")
+        numberInRouteurName = str(re.findall(r'\d+', router.name)[0])
+        if router.typeof == "P":
+            tn.write(b"ip address 1.1.1." + str(numberInRouteurName).encode('ascii') + b" 255.255.255.255" + b"\r\n")
+        elif router.typeof == "CE":
+            tn.write(b"ip address 1.1.2." + str(numberInRouteurName).encode('ascii') + b" 255.255.255.255" + b"\r\n")
+        elif router.typeof == "PE":
+            tn.write(b"ip address 1.1.3." + str(numberInRouteurName).encode('ascii') + b" 255.255.255.255" + b"\r\n")
+
+
         time.sleep(0.1)
 
         for interfaceName in router.interfaces:
