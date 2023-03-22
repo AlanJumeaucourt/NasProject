@@ -1,0 +1,29 @@
+Mar 22 09:05:08.200 HYPERVISOR: Release 0.2.21-amd64/Linux (tag 2019071212)
+Mar 22 09:05:08.200 HYPERVISOR: Started on IP = localhost, TCP port = 43465.
+Mar 22 09:05:08.206 HYPERVISOR: exec_cmd: hypervisor version 
+Mar 22 09:05:08.207 HYPERVISOR: exec_cmd: hypervisor working_dir /home/ecambrayla/GNS3/projects/NAS-PROJECT/project-files/dynamips 
+Mar 22 09:05:08.207 GENERAL: working_dir=/home/ecambrayla/GNS3/projects/NAS-PROJECT/project-files/dynamips
+Mar 22 09:05:08.207 HYPERVISOR: exec_cmd: hypervisor working_dir /home/ecambrayla/GNS3/projects/NAS-PROJECT/project-files/dynamips/8a88c600-42ba-4df0-b0c9-da5ea3938f13 
+Mar 22 09:05:08.207 GENERAL: working_dir=/home/ecambrayla/GNS3/projects/NAS-PROJECT/project-files/dynamips/8a88c600-42ba-4df0-b0c9-da5ea3938f13
+Mar 22 09:05:08.208 HYPERVISOR: exec_cmd: vm create PE1 1 c7200 
+Mar 22 09:05:08.210 VM: VM PE1 created.
+Mar 22 09:05:08.210 HYPERVISOR: exec_cmd: vm set_con_tcp_port PE1 5000 
+Mar 22 09:05:08.210 HYPERVISOR: exec_cmd: c7200 get_mac_addr PE1 
+Mar 22 09:05:08.211 HYPERVISOR: exec_cmd: vm get_status PE1 
+Mar 22 09:05:08.211 HYPERVISOR: exec_cmd: vm slot_add_binding PE1 0 0 C7200-IO-FE 
+Mar 22 09:05:08.211 HYPERVISOR: exec_cmd: vm set_disk0 PE1 0 
+Mar 22 09:05:08.212 HYPERVISOR: exec_cmd: vm get_status PE1 
+Mar 22 09:05:08.212 HYPERVISOR: exec_cmd: vm set_idle_pc PE1 0x61e05874 
+Mar 22 09:05:08.213 HYPERVISOR: exec_cmd: vm set_ios PE1 /home/ecambrayla/GNS3/images/IOS/c7200-advipservicesk9-mz.152-4.S5.image 
+Mar 22 09:05:08.213 HYPERVISOR: exec_cmd: c7200 set_mac_addr PE1 ca01.690c.0000 
+Mar 22 09:05:08.213 HYPERVISOR: exec_cmd: vm set_nvram PE1 512 
+Mar 22 09:05:08.213 HYPERVISOR: exec_cmd: vm set_ram PE1 512 
+Mar 22 09:05:08.213 HYPERVISOR: exec_cmd: vm get_status PE1 
+Mar 22 09:05:08.214 HYPERVISOR: exec_cmd: vm slot_add_binding PE1 1 0 PA-GE 
+Mar 22 09:05:08.214 HYPERVISOR: exec_cmd: vm get_status PE1 
+Mar 22 09:05:08.214 HYPERVISOR: exec_cmd: vm slot_add_binding PE1 2 0 PA-GE 
+Mar 22 09:05:08.214 HYPERVISOR: exec_cmd: vm get_status PE1 
+Mar 22 09:05:08.214 HYPERVISOR: exec_cmd: vm slot_add_binding PE1 3 0 PA-GE 
+Mar 22 09:05:08.457 HYPERVISOR: exec_cmd: nio create_udp udp-ad58ca68-df2e-4b0d-a7e1-e87107460f60 10002 127.0.0.1 10003 
+Mar 22 09:05:08.688 HYPERVISOR: exec_cmd: vm slot_add_nio_binding PE1 1 0 udp-ad58ca68-df2e-4b0d-a7e1-e87107460f60 
+Mar 22 09:05:08.688 HYPERVISOR: exec_cmd: vm get_status PE1 
