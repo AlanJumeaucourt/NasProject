@@ -174,12 +174,12 @@ if __name__ == '__main__':
         tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
         tn.write(b"\r\n")
         tn.write(b"end\r\n")
-        tn.write(b"conf t \r\n")
+        tn.write(b"conf t \r\n")  
         tn.write(b"ip cef \r\n")
         tn.write(b"router ospf 10\r\n")
 
         # Loopback address attribution
-        tn.write(b"int loopback0\r\n")
+        tn.write(b"i \r\n")
         tn.write(b"ip address " + str(router.interfaces["l0"]["ip"]).encode('ascii') + b" 255.255.255.255" + b"\r\n")
         if router.typeof == "PE" or router.typeof == "P":
             tn.write(b"ip ospf 10 area 0\r\n")
