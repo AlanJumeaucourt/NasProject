@@ -1,0 +1,12 @@
+{
+    "Prenom": "Bonjour",
+    "Nom": "Enchante",
+    "adresse": {
+        "rue": "Boulevard de l'INSA",
+        "numero": "45"
+    },
+    "mails": [
+        "bonsoir.aurevoir@gmail.com",
+        "aurevoir@mail.mail"
+    ]
+}
