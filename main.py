@@ -66,7 +66,7 @@ if __name__ == '__main__':
         setReseaux[int((i / 4) - 1)] = IPv4Address("10.16.1." + str(i))
 
     # Default.rdp is actually the name of the project in GNS3
-    lab = gns3fy.Project(name="test", connector =gns3_server)
+    lab = gns3fy.Project(name="NAS-PROJECT", connector =gns3_server)
     lab.get()
 
     # Add object router in list with name and uid
