@@ -6,7 +6,6 @@ from tabulate import tabulate
 from ipaddress import IPv4Address
 import telnetlib
 
-
 class Router:
     def __init__(self, name, uid, typeof):
         self.name = name
@@ -66,7 +65,11 @@ if __name__ == '__main__':
         setReseaux[int((i / 4) - 1)] = IPv4Address("10.16.1." + str(i))
 
     # Default.rdp is actually the name of the project in GNS3
-    lab = gns3fy.Project(name="NAS-PROJECT", connector =gns3_server)
+    GNS3_Project_Name = ""
+    for name in gns3_server.projects_summary(is_print=False):
+            if name[4] == "opened":
+                GNS3_Project_Name = name[0]
+    lab = gns3fy.Project(name=GNS3_Project_Name, connector =gns3_server)
     lab.get()
 
     # Add object router in list with name and uid
