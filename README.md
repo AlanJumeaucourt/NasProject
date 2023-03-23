@@ -1,6 +1,4 @@
 # NasProject
-Askip faut le lire
-apparemment
 
 # Installation
 
