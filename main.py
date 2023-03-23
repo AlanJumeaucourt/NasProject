@@ -388,8 +388,4 @@ if __name__ == '__main__':
     # for router in listRouter:
     #      router.showInfos()
     listRouter[0].showInfos()
-<<<<<<< HEAD
     print('Hello World')
-=======
-    print('Hello World')
->>>>>>> e6ccc710e614674adec1231e6939ca17ffe9fe30
