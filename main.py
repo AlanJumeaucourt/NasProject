@@ -5,7 +5,7 @@ import gns3fy
 from tabulate import tabulate
 from ipaddress import IPv4Address
 import telnetlib
-import json
+
 
 
 class Router:
@@ -49,8 +49,11 @@ def whichTypeOfRouterFromName(name):
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
 if __name__ == '__main__':
+<<<<<<< HEAD
     with open('ConfigIntention.json') as file:
         ConfigIntentionData = json.load(file)
+=======
+>>>>>>> e6ccc710e614674adec1231e6939ca17ffe9fe30
 
     # Define the server object to establish the connection
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
@@ -388,4 +391,8 @@ if __name__ == '__main__':
     # for router in listRouter:
     #      router.showInfos()
     listRouter[0].showInfos()
+<<<<<<< HEAD
     print('Hello World')
+=======
+    print('Hello World')
+>>>>>>> e6ccc710e614674adec1231e6939ca17ffe9fe30
