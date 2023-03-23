@@ -5,7 +5,7 @@ import gns3fy
 from tabulate import tabulate
 from ipaddress import IPv4Address
 import telnetlib
-
+import json
 
 
 class Router:
