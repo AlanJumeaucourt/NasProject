@@ -46,6 +46,14 @@ def whichTypeOfRouterFromName(name):
         return "CE"
 
 
+def whichClientFromRouterName(name):
+    if any([_ in name for _ in ["CER1", "CER2"]]):
+        return "Client_A"
+    if any([_ in name for _ in ["CER3", "CER4"]]):
+        return "Client_B"
+    else:
+        return "NOT A CLIENT"
+
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
 if __name__ == '__main__':
@@ -67,7 +75,6 @@ if __name__ == '__main__':
 
     listRouter = []
     setReseaux = {}
-    listPeRouter = []
 
     for i in range(4, 248, 4):
         setReseaux[int((i / 4) - 1)] = IPv4Address("10.16.1." + str(i))
@@ -100,13 +107,6 @@ if __name__ == '__main__':
         elif whichTypeOfRouterFromName(listRouter[i].name) == "PE":
             listRouter[i].interfaces["l0"]["ip"] = IPv4Address("1.1.2." + str(numberInRouteurName))
 
-    # Add PE router in listPeRouter
-    for router in listRouter:
-        if router.typeof == "PE":
-            listPeRouter.append(router)
-
-    print(listPeRouter)
-
     # Add BGP AS in router object
     for router in listRouter:
         if router.typeof == "P" or router.typeof == "PE":
@@ -117,6 +117,8 @@ if __name__ == '__main__':
             if any([_ in router.name for _ in ["R2"]]):
                 router.asNumber = "2222"
             if any([_ in router.name for _ in ["R3"]]):
+                router.asNumber = "3333"
+            if any([_ in router.name for _ in ["R4"]]):
                 router.asNumber = "3333"
 
 
@@ -180,7 +182,7 @@ if __name__ == '__main__':
     for router in listRouter:
         tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
         tn.write(b"\r\n")
-        tn.write(b"# Add loopback address on router \r\n")
+        tn.write(b"! Add loopback address on router \r\n")
         tn.write(b"end\r\n")
         tn.write(b"conf t \r\n")
         tn.write(b"ip cef \r\n")
@@ -199,7 +201,7 @@ if __name__ == '__main__':
     for router in listRouter:
         tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
         tn.write(b"\r\n")
-        tn.write(b"# Add ip address on connected interfaces \r\n")
+        tn.write(b"! Add ip address on connected interfaces \r\n")
         tn.write(b"end\r\n")
         tn.write(b"conf t \r\n")
         for interfaceName in router.interfaces:
@@ -216,7 +218,7 @@ if __name__ == '__main__':
     for router in listRouter:
         tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
         tn.write(b"\r\n")
-        tn.write(b"# Add OSPF in core network \r\n")
+        tn.write(b"! Add OSPF in core network \r\n")
         tn.write(b"end\r\n")
         tn.write(b"conf t \r\n")
 
@@ -239,7 +241,7 @@ if __name__ == '__main__':
         if router.typeof == "PE" or router.typeof == "P":
             tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
             tn.write(b"\r\n")
-            tn.write(b"# Add mpls on core network \r\n")
+            tn.write(b"! Add mpls on core network \r\n")
             tn.write(b"end\r\n")
             tn.write(b"conf t \r\n")
             tn.write(b"mpls label protocol ldp \r\n")
@@ -253,7 +255,7 @@ if __name__ == '__main__':
         if router.typeof == "PE":
             tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
             tn.write(b"\r\n")
-            tn.write(b"Configuring MP-BGP on PE Routers \r\n")
+            tn.write(b"! Configuring MP-BGP on PE Routers \r\n")
             tn.write(b"end\r\n")
             tn.write(b"conf t \r\n")
             for router2 in listRouter:
@@ -276,7 +278,7 @@ if __name__ == '__main__':
         tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
         if router.typeof == "CE":
             tn.write(b"\r\n")
-            tn.write(b"# Add eBGP between CE and PE \r\n")
+            tn.write(b"! Add eBGP between CE and PE \r\n")
             tn.write(b"end\r\n")
             tn.write(b"conf t \r\n")
             tn.write(b"router bgp " + router.asNumber.encode('ascii') + b"\r\n")
@@ -291,15 +293,15 @@ if __name__ == '__main__':
                 time.sleep(0.1)
         elif router.typeof == "PE":
             tn.write(b"\r\n")
-            tn.write(b"# Add eBGP between CE and PE \r\n")
+            tn.write(b"! Add eBGP between CE and PE \r\n")
             tn.write(b"end\r\n")
             tn.write(b"conf t \r\n")
             tn.write(b"router bgp " + router.asNumber.encode('ascii') + b"\r\n")
             for interfaceName in router.interfaces:
                 if router.interfaces[interfaceName]["isConnected"] == "true":
                     if "RouterConnectedTypeof" in router.interfaces[interfaceName]:
-                        if router.interfaces[interfaceName]["routerConnectedName"] == "CER1" or router.interfaces[interfaceName]["routerConnectedName"] == "CER2":
-                            tn.write(b"address-family ipv4 vrf Client_A \r\n")
+                        if whichClientFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]) != "NOT A CLIENT":
+                            tn.write(b"address-family ipv4 vrf " + str(whichClientFromRouterName(router.interfaces[interfaceName]["routerConnectedName"])).encode('ascii') + b" \r\n")
                             tn.write(b"neighbor " + str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode(
                                 'ascii') + b" remote-as " + str(router.interfaces[interfaceName]["RouterConnectedAsnumber"]).encode(
                                 'ascii') + b"\r\n")
@@ -314,7 +316,7 @@ if __name__ == '__main__':
         if router.typeof == "PE" or router.typeof == "P":
             tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
             tn.write(b"\r\n")
-            tn.write(b"# Add OSPF in core network \r\n")
+            tn.write(b"! Add OSPF in core network \r\n")
             tn.write(b"end\r\n")
             tn.write(b"conf t \r\n")
             for interfaceName in router.interfaces:
@@ -332,7 +334,7 @@ if __name__ == '__main__':
         if router.typeof == "PE":
             tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
             tn.write(b"\r\n")
-            tn.write(b"# Add vrf on PE\r\n")
+            tn.write(b"! Add vrf on PE\r\n")
             tn.write(b"end\r\n")
             tn.write(b"conf t \r\n")
 
@@ -349,16 +351,10 @@ if __name__ == '__main__':
             for interfaceName in router.interfaces:
                 if router.interfaces[interfaceName]["isConnected"] == "true":
                     if "RouterConnectedTypeof" in router.interfaces[interfaceName]:
-                        if router.interfaces[interfaceName]["routerConnectedName"] == "CER1" or router.interfaces[interfaceName]["routerConnectedName"] == "CER2":
+                        if whichClientFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]) != "NOT A CLIENT":
                             tn.write(b"interface " + interfaceName.encode('ascii') + b"\r\n")
-                            tn.write(b"ip vrf forwarding Client_A \r\n")
-                            tn.write(b"ip address " + str(router.interfaces[interfaceName]["ip"]).encode(
-                                'ascii') + b" 255.255.255.252" + b"\r\n")
-                        if router.interfaces[interfaceName]["routerConnectedName"] == "CER3" or router.interfaces[interfaceName]["routerConnectedName"] == "CER4":
-                            tn.write(b"interface " + interfaceName.encode('ascii') + b"\r\n")
-                            tn.write(b"ip vrf forwarding Client_B \r\n")
-                            tn.write(b"ip address " + str(router.interfaces[interfaceName]["ip"]).encode(
-                                'ascii') + b" 255.255.255.252" + b"\r\n")
+                            tn.write(b"ip vrf forwarding " + str(whichClientFromRouterName(router.interfaces[interfaceName]["routerConnectedName"])).encode('ascii') + b" \r\n")
+                            tn.write(b"ip address " + str(router.interfaces[interfaceName]["ip"]).encode('ascii') + b" 255.255.255.252" + b"\r\n")
                 time.sleep(0.1)
 
 
@@ -369,23 +365,21 @@ if __name__ == '__main__':
         if router.typeof == "PE":
             tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
             tn.write(b"\r\n")
-            tn.write(b"# PE-CE BGP Configuration \r\n")
+            tn.write(b"! PE-CE BGP Configuration \r\n")
             tn.write(b"end\r\n")
             tn.write(b"conf t \r\n")
             tn.write(b"router bgp " + router.asNumber.encode('ascii') + b"\r\n")
             for interfaceName in router.interfaces:
                 if router.interfaces[interfaceName]["isConnected"] == "true":
-                    if "routerConnectedName" in router.interfaces[interfaceName]:
-                        if router.interfaces[interfaceName]["routerConnectedName"] == "CER1" or router.interfaces[interfaceName]["routerConnectedName"] == "CER2":
-                            tn.write(b"address-family ipv4 vrf Client_A \r\n")
-                            tn.write(b"neighbor " + str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode(
-                                'ascii') + b" remote-as " + router.interfaces[interfaceName]["RouterConnectedAsnumber"].encode('ascii') + b"\r\n")
-                        if router.interfaces[interfaceName]["routerConnectedName"] == "CER3" or router.interfaces[interfaceName]["routerConnectedName"] == "CER4":
-                            tn.write(b"address-family ipv4 vrf Client_B \r\n")
+                    if "RouterConnectedTypeof" in router.interfaces[interfaceName]:
+                        if whichClientFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]) != "NOT A CLIENT":
+                            tn.write(b"address-family ipv4 vrf " + str(whichClientFromRouterName(
+                                router.interfaces[interfaceName]["routerConnectedName"])).encode('ascii') + b"\r\n")
+
                             tn.write(b"neighbor " + str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode(
                                 'ascii') + b" remote-as " + router.interfaces[interfaceName]["RouterConnectedAsnumber"].encode('ascii') + b"\r\n")
                 time.sleep(0.1)
-    # for router in listRouter:
-    #      router.showInfos()
+    for router in listRouter:
+         router.showInfos()
     listRouter[0].showInfos()
     print('Hello World')
