@@ -54,6 +54,18 @@ def whichClientFromRouterName(name):
     else:
         return "NOT A CLIENT"
 
+def whichAsFromRouterName(name):
+    if any([_ in name for _ in ["CER1"]]):
+        return "1111"
+    if any([_ in name for _ in ["CER2"]]):
+        return "2222"
+    if any([_ in name for _ in ["CER3"]]):
+        return "3333"
+    if any([_ in name for _ in ["CER4"]]):
+        return "4444"
+    else:
+        return "NO AS ON THIS ROUTER"
+
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
 if __name__ == '__main__':
@@ -112,14 +124,7 @@ if __name__ == '__main__':
         if router.typeof == "P" or router.typeof == "PE":
             router.asNumber = "1337"
         elif router.typeof == "CE":
-            if any([_ in router.name for _ in ["R1"]]):
-                router.asNumber = "1111"
-            if any([_ in router.name for _ in ["R2"]]):
-                router.asNumber = "2222"
-            if any([_ in router.name for _ in ["R3"]]):
-                router.asNumber = "3333"
-            if any([_ in router.name for _ in ["R4"]]):
-                router.asNumber = "3333"
+            router.asNumber = whichAsFromRouterName(router.name)
 
 
     # finding the link between routers
