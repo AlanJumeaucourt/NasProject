@@ -73,7 +73,7 @@ if __name__ == '__main__':
     fileObject = open("ConfigIntention.json", "r")
     jsonContent = fileObject.read()
     data = json.loads(jsonContent)
-    print(data['client']['insa']['rsvp'])
+    #print(data['client']['insa']['rsvp'])
 
     # Define the server object to establish the connection
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
@@ -94,7 +94,8 @@ if __name__ == '__main__':
 
     listRouter = []
     setReseaux = {}
-
+    
+    #Create IP @ of networks
     for i in range(4, 248, 4):
         setReseaux[int((i / 4) - 1)] = IPv4Address("10.16.1." + str(i))
 
@@ -132,7 +133,6 @@ if __name__ == '__main__':
             router.asNumber = "1337"
         elif router.typeof == "CE":
             router.asNumber = whichAsFromRouterName(router.name)
-
 
     # finding the link between routers
     print("\nStarting finding the link between routers")
