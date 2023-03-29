@@ -1,0 +1,35 @@
+{
+    "client": {
+        "insa":[
+            {
+                "router": [
+                    "CER1",
+                    "CER2",
+                    "CER3"
+                ],
+                "link": [
+                    "CER1=CER2",
+                    "CER1=CER3"
+                ],
+                "rsvp": {
+                    "CER1,CER23":20,
+                    "CER1,CER3":20
+                }
+            }
+        ],
+        "inria": [
+            {
+                "router": [
+                    "CER20",
+                    "CER21"
+                ],
+                "link": [
+                    "CER20=CER21"
+                ],
+                "rsvp": {
+                    
+                }
+            }
+        ]
+    }
+}

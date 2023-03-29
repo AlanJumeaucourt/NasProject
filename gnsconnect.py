@@ -1,6 +1,7 @@
 import gns3fy
+from tabulate import tabulate
 
-class GNS3:
+class gnsconnect:
     def connect():
         # Define the server object to establish the connection
         gns3_server = gns3fy.Gns3Connector("http://localhost:3080")

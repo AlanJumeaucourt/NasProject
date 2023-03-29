@@ -7,7 +7,7 @@ from ipaddress import IPv4Address
 import telnetlib
 import json
 
-from gnsconnect import GNS3
+from gnsconnect import gnsconnect
 
 class Router:
     def __init__(self, name, uid, typeof):
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     with open('ConfigIntention.json') as file:
         ConfigIntentionData = json.load(file)
 
-    GNS3.connect()
+    gnsconnect.connect()
 
     listRouter = []
     setReseaux = {}
