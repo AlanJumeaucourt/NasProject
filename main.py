@@ -7,7 +7,6 @@ from ipaddress import IPv4Address
 import telnetlib
 import json
 
-from gnsconnect import gnsconnect
 
 class Router:
     def __init__(self, name, uid, typeof):
@@ -72,8 +71,24 @@ def whichAsFromRouterName(name):
 if __name__ == '__main__':
     with open('ConfigIntention.json') as file:
         ConfigIntentionData = json.load(file)
+    print(file)
 
-    gnsconnect.connect()
+    # Define the server object to establish the connection
+    gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
+    print(
+        tabulate(
+            gns3_server.projects_summary(is_print=False),
+            headers=["Project Name", "Project ID", "Total Nodes", "Total Links", "Status"],
+        )
+    )
+    nameProject= ""
+    for name in gns3_server.projects_summary(is_print=False):
+        if name[4] == "opened":
+            nameProject = name[0]
+                
+    # Default.rdp is actually the name of the project in GNS3
+    lab = gns3fy.Project(name=nameProject, connector =gns3_server)
+    lab.get()
 
     listRouter = []
     setReseaux = {}
