@@ -1,0 +1,30 @@
+Mar 29 08:36:05.469 HYPERVISOR: Release 0.2.17-x86/Windows (tag 2017072410)
+Mar 29 08:36:05.469 HYPERVISOR: Started on IP = localhost, TCP port = 49936.
+Mar 29 08:36:05.957 HYPERVISOR: exec_cmd: hypervisor version 
+Mar 29 08:36:05.957 HYPERVISOR: exec_cmd: hypervisor working_dir C:\Users\Etienne CAMBRAY\OneDrive\Desktop\NasProject\GNS3\project-files\dynamips 
+Mar 29 08:36:05.957 GENERAL: working_dir=C:\Users\Etienne CAMBRAY\OneDrive\Desktop\NasProject\GNS3\project-files\dynamips
+Mar 29 08:36:05.957 HYPERVISOR: exec_cmd: hypervisor working_dir C:\Users\Etienne CAMBRAY\OneDrive\Desktop\NasProject\GNS3\project-files\dynamips\9f65454d-bb73-4cad-ad9f-968bc1fa9a4d 
+Mar 29 08:36:05.957 GENERAL: working_dir=C:\Users\Etienne CAMBRAY\OneDrive\Desktop\NasProject\GNS3\project-files\dynamips\9f65454d-bb73-4cad-ad9f-968bc1fa9a4d
+Mar 29 08:36:05.957 HYPERVISOR: exec_cmd: vm create CE1 5 c7200 
+Mar 29 08:36:05.957 VM: VM CE1 created.
+Mar 29 08:36:05.957 HYPERVISOR: exec_cmd: vm set_con_tcp_port CE1 5004 
+Mar 29 08:36:05.957 HYPERVISOR: exec_cmd: c7200 get_mac_addr CE1 
+Mar 29 08:36:05.957 HYPERVISOR: exec_cmd: vm get_status CE1 
+Mar 29 08:36:05.957 HYPERVISOR: exec_cmd: vm slot_add_binding CE1 0 0 C7200-IO-FE 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm set_disk0 CE1 0 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm set_exec_area CE1 64 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm get_status CE1 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm set_idle_pc CE1 0x61d99154 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm set_ios CE1 C:/Users/Etienne CAMBRAY/GNS3/images/IOS/c7200-advipservicesk9-mz.152-4.S5.image 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: c7200 set_mac_addr CE1 ca05.7974.0000 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm set_nvram CE1 512 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm set_ram CE1 512 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm get_status CE1 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm slot_add_binding CE1 1 0 PA-GE 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm get_status CE1 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm slot_add_binding CE1 2 0 PA-GE 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm get_status CE1 
+Mar 29 08:36:05.961 HYPERVISOR: exec_cmd: vm slot_add_binding CE1 3 0 PA-GE 
+Mar 29 08:36:08.272 HYPERVISOR: exec_cmd: nio create_udp udp-8b56bd3a-b248-482c-9ec5-50862f4318c0 10020 127.0.0.1 10021 
+Mar 29 08:36:08.528 HYPERVISOR: exec_cmd: vm slot_add_nio_binding CE1 1 0 udp-8b56bd3a-b248-482c-9ec5-50862f4318c0 
+Mar 29 08:36:08.528 HYPERVISOR: exec_cmd: vm get_status CE1 

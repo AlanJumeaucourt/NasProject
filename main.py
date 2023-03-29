@@ -7,6 +7,7 @@ from ipaddress import IPv4Address
 import telnetlib
 import json
 
+from gnsconnect import GNS3
 
 class Router:
     def __init__(self, name, uid, typeof):
@@ -72,18 +73,7 @@ if __name__ == '__main__':
     with open('ConfigIntention.json') as file:
         ConfigIntentionData = json.load(file)
 
-    # Define the server object to establish the connection
-    gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
-    print(
-        tabulate(
-            gns3_server.projects_summary(is_print=False),
-            headers=["Project Name", "Project ID", "Total Nodes", "Total Links", "Status"],
-        )
-    )
-    nameProject= ""
-    for name in gns3_server.projects_summary(is_print=False):
-        if name[4] == "opened":
-            nameProject = name[0]
+    GNS3.connect()
 
     listRouter = []
     setReseaux = {}
@@ -361,8 +351,6 @@ if __name__ == '__main__':
                             tn.write(b"ip vrf forwarding " + str(whichClientFromRouterName(router.interfaces[interfaceName]["routerConnectedName"])).encode('ascii') + b" \r\n")
                             tn.write(b"ip address " + str(router.interfaces[interfaceName]["ip"]).encode('ascii') + b" 255.255.255.252" + b"\r\n")
                 time.sleep(0.1)
-
-
 
     # PE-CE BGP Configuration
     print("PE-CE BGP Configuration")
