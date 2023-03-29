@@ -1,7 +1,9 @@
 {
     "client": {
+        //Nom des clients
         "insa":[
             {
+                //Routeur du client
                 "router": [
                     "CER1",
                     "CER2",
@@ -11,9 +13,10 @@
                     "CER1=CER2",
                     "CER1=CER3"
                 ],
-                "rsvp": [
-                    "CER1,CER2 = 20%"
-                ]
+                "rsvp": {
+                    "CER1,CER23":20,
+                    "CER1,CER3":20
+                }
             }
         ],
         "inria": [
@@ -25,9 +28,9 @@
                 "link": [
                     "CER20=CER21"
                 ],
-                "rsvp": [
-                    "CER1,CER2 = 20%"
-                ]
+                "rsvp": {
+                    
+                }
             }
         ]
     }
