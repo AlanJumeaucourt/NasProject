@@ -10,8 +10,13 @@
                 "CER1=CER2",
                 "CER1=CER3"
             ],
+            "ASrouterIP":{
+                "CER1": "1111",
+                "CER2": "2222",
+                "CER3": "3333"
+            },
             "rsvp": {
-                "CER1,CER23": 20,
+                "CER1,CER2": 20,
                 "CER1,CER3": 20
             }
         },
@@ -20,6 +25,10 @@
                 "CER20",
                 "CER21"
             ],
+            "ASrouterIP":{
+                "CER20": "5555",
+                "CER21": "6666"
+            },
             "link": [
                 "CER20=CER21"
             ],

@@ -7,6 +7,9 @@ from ipaddress import IPv4Address
 import telnetlib
 import json
 
+fileObject = open("ConfigIntention.json", "r")
+jsonContent = fileObject.read()
+ConfigIntentionData = json.loads(jsonContent)
 
 class Router:
     def __init__(self, name, uid, typeof):
@@ -56,24 +59,28 @@ def whichClientFromRouterName(name):
 
 def whichAsFromRouterName(name):
     if any([_ in name for _ in ["CER1"]]):
-        return "1111"
+        return ConfigIntentionData['client']['insa']['router']['CER1']
     if any([_ in name for _ in ["CER2"]]):
-        return "2222"
+        return ConfigIntentionData['client']['insa']['router']['CER2']
     if any([_ in name for _ in ["CER3"]]):
-        return "3333"
-    if any([_ in name for _ in ["CER4"]]):
-        return "4444"
+        return ConfigIntentionData['client']['insa']['router']['CER3']
+    if any([_ in name for _ in ["CER20"]]):
+        return ConfigIntentionData['client']['inria']['router']['CER20']
+    if any([_ in name for _ in ["CER21"]]):
+        return ConfigIntentionData['client']['inria']['router']['CER21']
     else:
         return "NO AS ON THIS ROUTER"
 
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
 if __name__ == '__main__':
+    print(ConfigIntentionData['client']['insa']['router']['CER1'])
     #Open json file
-    fileObject = open("ConfigIntention.json", "r")
-    jsonContent = fileObject.read()
-    data = json.loads(jsonContent)
+    #fileObject = open("ConfigIntention.json", "r")
+    #jsonContent = fileObject.read()
+    #data = json.loads(jsonContent)
     #print(data['client']['insa']['rsvp'])
+
 
     # Define the server object to establish the connection
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
@@ -87,26 +94,31 @@ if __name__ == '__main__':
     for name in gns3_server.projects_summary(is_print=False):
         if name[4] == "opened":
             nameProject = name[0]
-                
+
+
     # Default.rdp is actually the name of the project in GNS3
     lab = gns3fy.Project(name=nameProject, connector =gns3_server)
     lab.get()
 
     listRouter = []
     setReseaux = {}
-    
+
+
     #Create IP @ of networks
     for i in range(4, 248, 4):
         setReseaux[int((i / 4) - 1)] = IPv4Address("10.16.1." + str(i))
+
 
     # Default.rdp is actually the name of the project in GNS3
     lab = gns3fy.Project(name=nameProject, connector =gns3_server)
     lab.get()
 
+
     # Add object router in list with name and uid
     print("\nStarting list and create router object in listRouteur")
     for node in lab.nodes:
         listRouter.append(Router(node.name, node.node_id, whichTypeOfRouterFromName(node.name)))
+
 
     # Add interface of router
     for i in range(len(listRouter)):
@@ -127,12 +139,14 @@ if __name__ == '__main__':
         elif whichTypeOfRouterFromName(listRouter[i].name) == "PE":
             listRouter[i].interfaces["l0"]["ip"] = IPv4Address("1.1.2." + str(numberInRouteurName))
 
+
     # Add BGP AS in router object
     for router in listRouter:
         if router.typeof == "P" or router.typeof == "PE":
             router.asNumber = "1337"
         elif router.typeof == "CE":
             router.asNumber = whichAsFromRouterName(router.name)
+
 
     # finding the link between routers
     print("\nStarting finding the link between routers")
@@ -188,6 +202,7 @@ if __name__ == '__main__':
                             firstRouterConnected)
                         router.interfaces[interfaceName]['ipNetwork'] = networkIp
                         router.interfaces[interfaceName]['ip'] = secondRouterIp
+
 
     # Add loopback address on router
     print("Add loopback address on router")
@@ -247,6 +262,7 @@ if __name__ == '__main__':
                             tn.write(b"ip ospf 10 area 0 \r\n")
             time.sleep(0.1)
 
+
     # Add mpls on core network
     print("Add mpls on core network")
     for router in listRouter:
@@ -260,6 +276,7 @@ if __name__ == '__main__':
             tn.write(b"mpls ldp router-id Loopback0 \r\n")
             tn.write(b"mpls ip \r\n")
         time.sleep(0.1)
+
 
     # Configuring MP-BGP on PE Routers
     print("Configuring MP-BGP on PE Routers")
@@ -281,7 +298,6 @@ if __name__ == '__main__':
                         tn.write(b"neighbor " + str(router2.interfaces["l0"]["ip"]).encode('ascii') + b" next-hop-self \r\n")
                         tn.write(b"neighbor " + str(router2.interfaces["l0"]["ip"]).encode('ascii') + b" send-community both \r\n")
                 time.sleep(0.1)
-
 
 
     # Add eBGP between CE and PE
