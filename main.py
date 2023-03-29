@@ -69,17 +69,11 @@ def whichAsFromRouterName(name):
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
 if __name__ == '__main__':
-<<<<<<< HEAD
     #Open json file
     fileObject = open("ConfigIntention.json", "r")
     jsonContent = fileObject.read()
     data = json.loads(jsonContent)
     print(data['client']['insa']['rsvp'])
-=======
-    with open('ConfigIntention.json') as f:
-        data = json.load(f)
-    print(data)
->>>>>>> 65da8c488f9f4b069638793cb137904cbf5b4c1b
 
     exit()
     # Define the server object to establish the connection
