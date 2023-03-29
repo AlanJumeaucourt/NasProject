@@ -59,7 +59,6 @@ def whichAsFromRouterName(name):
                 return data["client"][client]["ASrouterIP"][router]
 
 
-
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
 if __name__ == '__main__':
@@ -67,11 +66,6 @@ if __name__ == '__main__':
     with open("ConfigIntention.json", "r") as fileObject:
         jsonContent = fileObject.read()
         data = json.loads(jsonContent)
-
-    print(whichClientFromRouterName("CER20"))
-    print(whichAsFromRouterName("CER20"))
-
-    exit()
 
     # Define the server object to establish the connection
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
