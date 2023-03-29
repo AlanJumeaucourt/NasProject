@@ -75,7 +75,6 @@ if __name__ == '__main__':
     data = json.loads(jsonContent)
     print(data['client']['insa']['rsvp'])
 
-    exit()
     # Define the server object to establish the connection
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
     print(
