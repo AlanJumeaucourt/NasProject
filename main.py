@@ -7,7 +7,6 @@ from ipaddress import IPv4Address
 import telnetlib
 import json
 
-
 class Router:
     def __init__(self, name, uid, typeof):
         self.name = name
@@ -47,24 +46,19 @@ def whichTypeOfRouterFromName(name):
 
 
 def whichClientFromRouterName(name):
-    if any([_ in name for _ in ["CER1", "CER2"]]):
-        return "Client_A"
-    if any([_ in name for _ in ["CER3", "CER4"]]):
-        return "Client_B"
-    else:
-        return "NOT A CLIENT"
+    for client in data["client"]:
+        for router in data["client"][client]["router"]:
+            if router == name:
+                return client
+
 
 def whichAsFromRouterName(name):
-    if any([_ in name for _ in ["CER1"]]):
-        return "1111"
-    if any([_ in name for _ in ["CER2"]]):
-        return "2222"
-    if any([_ in name for _ in ["CER3"]]):
-        return "3333"
-    if any([_ in name for _ in ["CER4"]]):
-        return "4444"
-    else:
-        return "NO AS ON THIS ROUTER"
+    for client in data["client"]:
+        for router in data["client"][client]["ASrouterIP"]:
+            if router == name:
+                return data["client"][client]["ASrouterIP"][router]
+
+
 
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
@@ -73,8 +67,11 @@ if __name__ == '__main__':
     with open("ConfigIntention.json", "r") as fileObject:
         jsonContent = fileObject.read()
         data = json.loads(jsonContent)
-    print(data['client']['insa']['rsvp'])
-    #print(data['client']['insa']['rsvp'])
+
+    print(whichClientFromRouterName("CER20"))
+    print(whichAsFromRouterName("CER20"))
+
+    exit()
 
     # Define the server object to establish the connection
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
