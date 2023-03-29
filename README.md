@@ -1,7 +1,6 @@
 # NasProject
 **INSA of Lyon student project of NAS**
 **3TCA Alan/Etienne/Lucas/Ryad/Zineb**
-**
 # Installation:
 Clone this repository to your favorite folder.
 Next you need to configure the "ConfigIntention.json" file according to your GNS3 project.
