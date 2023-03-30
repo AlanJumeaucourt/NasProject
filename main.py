@@ -428,7 +428,7 @@ def autoAddConfigOnRouter(router):
 def autoRemoveConfigOnRouter(router):
     pass
     # To do :
-    # If PE : erase config for all PE that attached to him
+    # If PE : erase config for all CE that attached to him
     # If PE : remove i-bgp peer on all other PE
     # If PE : erase his config
 
