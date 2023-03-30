@@ -197,37 +197,6 @@ if __name__ == '__main__':
                         router.interfaces[interfaceName]['ipNetwork'] = networkIp
                         router.interfaces[interfaceName]['ip'] = secondRouterIp
 
-
-    # TEST
-    print("TEST")
-    for router in listRouter:
-        if router.typeof == "PE":
-            print(router.showInfos())
-            for interfaceName in router.interfaces:
-                if router.interfaces[interfaceName]["isConnected"] == "true":
-                    if "routerConnectedName" in router.interfaces[interfaceName]:
-                        if router.interfaces[interfaceName]["RouterConnectedTypeof"] == "CE" :
-                            print(interfaceName)
-                            print("ip vrf "
-                                  + str((router.interfaces[interfaceName]["routerConnectedName"]))
-                                  + " \r\n")
-                            print("iciiiii" + str(numberInString(str(router.interfaces[interfaceName]["routerConnectedName"]))))
-                            print("rd "
-                                     + str(router.interfaces[interfaceName]["RouterConnectedAsnumber"])
-                                     + ":"
-                                     + str(numberInString(str(whichVrfFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]))))
-                                     + " \r\n")
-
-                            for rt in wichRtImportFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]):
-                                print("route-target import " + str(rt) + " \r\n")
-                            for rt in wichRtImportFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]):
-                                print("route-target export " + str(rt) + " \r\n")
-
-                            print("interface " + interfaceName + "\r\n")
-                            print("ip vrf forwarding " + str(router.interfaces[interfaceName]["routerConnectedName"]) + " \r\n")
-                            print("ip address " + str(router.interfaces[interfaceName]["ip"]) + " 255.255.255.252" + "\r\n")
-                time.sleep(0.1)
-
     # Add loopback address on router
     print("Add loopback address on router")
     for router in listRouter:
