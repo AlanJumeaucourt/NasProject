@@ -1,3 +1,82 @@
+import re
+import time
+
+import gns3fy
+from tabulate import tabulate
+from ipaddress import IPv4Address
+import telnetlib
+import json
+
+
+class Router:
+    def __init__(self, name, uid, typeof):
+        self.name = name
+        self.typeof = typeof
+        self.interfaces = {}
+        self.uid = uid
+        self.asNumber = ""
+
+    def __str__(self):
+        return f"""
+Name: {self.name} 
+Uid : {self.uid}
+typeof: {self.typeof}
+interfaces : {self.interfaces}
+asNumber  {self.asNumber}
+"""
+
+    def showInfos(self):
+        print("")
+        print(f"--------------------------------Name: {self.name}--------------------------------")
+        print(f"Uid: {self.uid}")
+        print(f"typeof: {self.typeof}")
+        print(f"asNumber: {self.asNumber}")
+        for interfaceName in self.interfaces:
+            print(f"interfaces : {interfaceName}")
+            for key in self.interfaces[interfaceName]:
+                print(f"    {key} : {self.interfaces[interfaceName][key]}")
+
+
+def whichTypeOfRouterFromName(name):
+    if name.startswith("PE"):
+        return "PE"
+    elif name.startswith("P"):
+        return "P"
+    elif name.startswith("CE"):
+        return "CE"
+
+
+def whichVrfFromRouterName(name):
+    for client in data["client"]:
+        for link in data["client"][client]["link"]:
+            if name in link.split("&"):
+                return (link)
+
+
+def wichRtFromRouterName(name):
+    links = []
+    for client in data["client"]:
+        for link in data["client"][client]["link"]:
+            if name in link.split("&"):
+                links.append(numberInString(link) + ":" + numberInString(link))
+    return links
+
+
+def whichAsFromRouterName(name):
+    for client in data["client"]:
+        for router in data["client"][client]["ASrouterIP"]:
+            if router == name:
+                return data["client"][client]["ASrouterIP"][router]
+
+
+def numberInString(text):
+    final = ""
+    for letter in text:
+        if letter.isdigit():
+            final += letter
+    return str(final)
+
+
 def AddLoopbackAddressOnRouter(router):
     tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
     tn.write(b"\r\n")
@@ -38,7 +117,7 @@ def addIpAddressOnConnectedInterfaces(router, interfaceName):
     time.sleep(0.1)
 
 
-def addOspfInCoreNetwork(router, interfaceName):
+def addOspfOnPeAndPRouters(router, interfaceName):
     tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
     tn.write(b"\r\n")
     tn.write(b"! Add OSPF in core network \r\n")
@@ -58,7 +137,7 @@ def addOspfInCoreNetwork(router, interfaceName):
     time.sleep(0.1)
 
 
-def activateMplsOnCoreNetwork(router):
+def activateMplsOnPeAndPRouters(router):
     if router.typeof == "PE" or router.typeof == "P":
         tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
         tn.write(b"\r\n")
@@ -68,13 +147,6 @@ def activateMplsOnCoreNetwork(router):
         tn.write(b"mpls label protocol ldp \r\n")
         tn.write(b"mpls ldp router-id Loopback0 \r\n")
         tn.write(b"mpls ip \r\n")
-    time.sleep(0.1)
-    if router.typeof == "PE" or router.typeof == "P":
-        tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
-        tn.write(b"\r\n")
-        tn.write(b"! Enable MPLS on PE and P Routers \r\n")
-        tn.write(b"end\r\n")
-        tn.write(b"conf t \r\n")
     time.sleep(0.1)
 
 
@@ -232,85 +304,6 @@ def iBgpConfigurationOnPe(router):
             time.sleep(0.1)
 
 
-import re
-import time
-
-import gns3fy
-from tabulate import tabulate
-from ipaddress import IPv4Address
-import telnetlib
-import json
-
-
-class Router:
-    def __init__(self, name, uid, typeof):
-        self.name = name
-        self.typeof = typeof
-        self.interfaces = {}
-        self.uid = uid
-        self.asNumber = ""
-
-    def __str__(self):
-        return f"""
-Name: {self.name} 
-Uid : {self.uid}
-typeof: {self.typeof}
-interfaces : {self.interfaces}
-asNumber  {self.asNumber}
-"""
-
-    def showInfos(self):
-        print("")
-        print(f"--------------------------------Name: {self.name}--------------------------------")
-        print(f"Uid: {self.uid}")
-        print(f"typeof: {self.typeof}")
-        print(f"asNumber: {self.asNumber}")
-        for interfaceName in self.interfaces:
-            print(f"interfaces : {interfaceName}")
-            for key in self.interfaces[interfaceName]:
-                print(f"    {key} : {self.interfaces[interfaceName][key]}")
-
-
-def whichTypeOfRouterFromName(name):
-    if name.startswith("PE"):
-        return "PE"
-    elif name.startswith("P"):
-        return "P"
-    elif name.startswith("CE"):
-        return "CE"
-
-
-def whichVrfFromRouterName(name):
-    for client in data["client"]:
-        for link in data["client"][client]["link"]:
-            if name in link.split("&"):
-                return (link)
-
-
-def wichRtFromRouterName(name):
-    links = []
-    for client in data["client"]:
-        for link in data["client"][client]["link"]:
-            if name in link.split("&"):
-                links.append(numberInString(link) + ":" + numberInString(link))
-    return links
-
-
-def whichAsFromRouterName(name):
-    for client in data["client"]:
-        for router in data["client"][client]["ASrouterIP"]:
-            if router == name:
-                return data["client"][client]["ASrouterIP"][router]
-
-
-def numberInString(text):
-    final = ""
-    for letter in text:
-        if letter.isdigit():
-            final += letter
-    return str(final)
-
-
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
 if __name__ == '__main__':
@@ -319,18 +312,15 @@ if __name__ == '__main__':
         jsonContent = fileObject.read()
         data = json.loads(jsonContent)
 
-    # Define the server object to establish the connection
+    # Connect to GNS3 API
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
-    print(
-        tabulate(
-            gns3_server.projects_summary(is_print=False),
-            headers=["Project Name", "Project ID", "Total Nodes", "Total Links", "Status"],
-        )
-    )
     nameProject = ""
     for name in gns3_server.projects_summary(is_print=False):
         if name[4] == "opened":
             nameProject = name[0]
+    lab = gns3fy.Project(name=nameProject, connector=gns3_server)
+    lab.get()
+
 
     listRouter = []
     setReseaux = {}
@@ -339,22 +329,14 @@ if __name__ == '__main__':
     for i in range(4, 248, 4):
         setReseaux[int((i / 4) - 1)] = IPv4Address("10.16.1." + str(i))
 
-    # Default.rdp is actually the name of the project in GNS3
-    lab = gns3fy.Project(name=nameProject, connector=gns3_server)
-    lab.get()
-
     # Add object router in list with name and uid
     print("\nStarting list and create router object in listRouteur")
     for node in lab.nodes:
         listRouter.append(Router(node.name, node.node_id, whichTypeOfRouterFromName(node.name)))
 
-    # Add interface of router
+    # Add interface in router object
     for i in range(len(listRouter)):
         for port in lab.nodes[i].ports:
-            # Commented because no need for long name, maybe will be usefull later in project
-            # listRouteur[i].interfaces[port['name']] = {}
-            # listRouteur[i].interfaces[port['name']]['isConnected'] = "false"
-            # listRouteur[i].interfaces[port['name']]['shortName'] = port['short_name']
             listRouter[i].interfaces[port['short_name']] = {}
             listRouter[i].interfaces[port['short_name']]['isConnected'] = "false"
         listRouter[i].interfaces["l0"] = {}
@@ -393,9 +375,10 @@ if __name__ == '__main__':
             elif router.uid == link.nodes[1]['node_id']:
                 secondRouterConnected = router.name
                 secondRouterAsnumber = router.asNumber
-        print("    " + firstRouterConnected + link.nodes[0]['label'][
-            'text'] + " is connected to " + secondRouterConnected +
-              link.nodes[1]['label']['text'])
+        print("    " + firstRouterConnected + link.nodes[0]['label']['text']
+              + " is connected to "
+              + secondRouterConnected
+              + link.nodes[1]['label']['text'])
         networkIp = setReseaux[i]
         firstRouterIp = setReseaux[i] + 1
         secondRouterIp = setReseaux[i] + 2
@@ -406,8 +389,7 @@ if __name__ == '__main__':
                     if interfaceName == link.nodes[0]['label']['text']:
                         router.interfaces[interfaceName]['isConnected'] = "true"
                         router.interfaces[interfaceName]['routerConnectedName'] = secondRouterConnected
-                        router.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[1]['label'][
-                            'text']
+                        router.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[1]['label']['text']
                         router.interfaces[interfaceName]['RouterConnectedIp'] = secondRouterIp
                         router.interfaces[interfaceName]['RouterConnectedTypeof'] = whichTypeOfRouterFromName(
                             secondRouterConnected)
@@ -420,8 +402,7 @@ if __name__ == '__main__':
                     if interfaceName == link.nodes[1]['label']['text']:
                         router.interfaces[interfaceName]['isConnected'] = "true"
                         router.interfaces[interfaceName]['routerConnectedName'] = firstRouterConnected
-                        router.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[0]['label'][
-                            'text']
+                        router.interfaces[interfaceName]['routerConnectedInterfaceName'] = link.nodes[0]['label']['text']
                         router.interfaces[interfaceName]['RouterConnectedAsnumber'] = firstRouterAsnumber
                         router.interfaces[interfaceName]['RouterConnectedIp'] = firstRouterIp
                         router.interfaces[interfaceName]['RouterConnectedTypeof'] = whichTypeOfRouterFromName(
@@ -429,14 +410,14 @@ if __name__ == '__main__':
                         router.interfaces[interfaceName]['ipNetwork'] = networkIp
                         router.interfaces[interfaceName]['ip'] = secondRouterIp
 
+# Configuring router via telnet
 for router in listRouter:
-    AddLoopbackAddressOnRouter(router)
-    activateMplsOnCoreNetwork(router)
+    activateMplsOnPeAndPRouters(router)
     iBgpConfigurationOnPe(router)
     for interfaceName in router.interfaces:
         if router.interfaces[interfaceName]["isConnected"] == "true" and interfaceName != "l0":
             addIpAddressOnConnectedInterfaces(router, interfaceName)
-            addOspfInCoreNetwork(router, interfaceName)
+            activateMplsOnPeAndPRouters(router, interfaceName)
             enableMplsOnPeAndPRouters(router, interfaceName)
             addVrfOnPe(router, interfaceName)
             eBgpConfigurationOnCe(router, interfaceName)
