@@ -410,6 +410,10 @@ if __name__ == '__main__':
 
 
 def autoAddConfigOnRouter(router):
+    # To do :
+    # IP attribution for new router not working after first iteration
+    #
+
     activateMplsOnPeAndPRouters(router)
     iBgpConfigurationOnPe(router)
     for interfaceName in router.interfaces:
@@ -422,7 +426,19 @@ def autoAddConfigOnRouter(router):
 
 
 def autoRemoveConfigOnRouter(router):
-    pass # To do
+    pass
+    # To do :
+    # If PE : erase config for all PE that attached to him
+    # If PE : remove i-bgp peer on all other PE
+    # If PE : erase his config
+
+    # If CE : delete VRF on his attached PE
+    # If CE : delete route target on all PE that implicate this CE
+    # If CE : erase his config
+
+    # If P : delete IP on connected router to this P
+    # If P : erase his config
+    # If P : ? if the P is connected to a PE, what to do ? erase all config on the PE and CE ? or nothing else than previous.
 
 # Configuring router via telnet
 for router in listRouter:
