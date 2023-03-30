@@ -171,7 +171,6 @@ def enableMplsOnPeAndPRouters(router, interfaceName):
 
 def addVrfOnPe(router, interfaceName):
     if router.typeof == "PE":
-        print("in func addVrfOnPe with router : " + router.name + " and Interface = " + interfaceName)
         tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
         tn.write(b"\r\n")
         tn.write(b"! Add vrf on PE\r\n")
@@ -180,7 +179,6 @@ def addVrfOnPe(router, interfaceName):
         if router.interfaces[interfaceName]["isConnected"] == "true":
             if "routerConnectedName" in router.interfaces[interfaceName]:
                 if router.interfaces[interfaceName]["RouterConnectedTypeof"] == "CE":
-                    print("ok")
                     tn.write(b"ip vrf "
                              + str(router.interfaces[interfaceName]["routerConnectedName"]).encode('ascii')
                              + b" \r\n")
@@ -410,18 +408,26 @@ if __name__ == '__main__':
                         router.interfaces[interfaceName]['ipNetwork'] = networkIp
                         router.interfaces[interfaceName]['ip'] = secondRouterIp
 
-# Configuring router via telnet
-for router in listRouter:
+
+def autoAddConfigOnRouter(router):
     activateMplsOnPeAndPRouters(router)
     iBgpConfigurationOnPe(router)
     for interfaceName in router.interfaces:
         if router.interfaces[interfaceName]["isConnected"] == "true" and interfaceName != "l0":
             addIpAddressOnConnectedInterfaces(router, interfaceName)
-            activateMplsOnPeAndPRouters(router, interfaceName)
             enableMplsOnPeAndPRouters(router, interfaceName)
             addVrfOnPe(router, interfaceName)
             eBgpConfigurationOnCe(router, interfaceName)
             eBgpConfigurationOnPe(router, interfaceName)
+
+
+def autoRemoveConfigOnRouter(router):
+    pass # To do
+
+# Configuring router via telnet
+for router in listRouter:
+    autoAddConfigOnRouter(router)
+
 
 # for router in listRouter:
 #      router.showInfos()
