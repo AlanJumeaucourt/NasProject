@@ -7,8 +7,8 @@
                 "CER3"
             ],
             "link": [
-                "CER1=CER2",
-                "CER1=CER3"
+                "CER1&CER2",
+                "CER1&CER3"
             ],
             "ASrouterIP":{
                 "CER1": "1111",
@@ -22,15 +22,15 @@
         },
         "inria": {
             "router": [
-                "CER20",
-                "CER21"
+                "CER92",
+                "CER91"
             ],
             "ASrouterIP":{
-                "CER20": "5555",
-                "CER21": "6666"
+                "CER92": "9292",
+                "CER91": "9191"
             },
             "link": [
-                "CER20=CER21"
+                "CER91&CER92"
             ],
             "rsvp": {}
         }

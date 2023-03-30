@@ -45,11 +45,25 @@ def whichTypeOfRouterFromName(name):
         return "CE"
 
 
-def whichClientFromRouterName(name):
+def whichVrfFromRouterName(name):
     for client in data["client"]:
-        for router in data["client"][client]["router"]:
-            if router == name:
-                return client
+        for link in data["client"][client]["link"]:
+            if name in link.split("&"):
+                return(link)
+
+def wichRtExportFromRouterName(name):
+    for client in data["client"]:
+        for link in data["client"][client]["link"]:
+            if name in link.split("&"):
+                return (numberInString(link)+":"+numberInString(link))
+
+def wichRtImportFromRouterName(name):
+    links = []
+    for client in data["client"]:
+        for link in data["client"][client]["link"]:
+            if name in link.split("&"):
+                links.append(numberInString(link)+":"+numberInString(link))
+    return links
 
 
 def whichAsFromRouterName(name):
@@ -58,7 +72,12 @@ def whichAsFromRouterName(name):
             if router == name:
                 return data["client"][client]["ASrouterIP"][router]
 
-
+def numberInString(text):
+    final = ""
+    for letter in text:
+        if letter.isdigit():
+            final += letter
+    return str(final)
 
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
@@ -67,11 +86,6 @@ if __name__ == '__main__':
     with open("ConfigIntention.json", "r") as fileObject:
         jsonContent = fileObject.read()
         data = json.loads(jsonContent)
-
-    print(whichClientFromRouterName("CER20"))
-    print(whichAsFromRouterName("CER20"))
-
-    exit()
 
     # Define the server object to establish the connection
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
@@ -85,15 +99,11 @@ if __name__ == '__main__':
     for name in gns3_server.projects_summary(is_print=False):
         if name[4] == "opened":
             nameProject = name[0]
-                
-    # Default.rdp is actually the name of the project in GNS3
-    lab = gns3fy.Project(name=nameProject, connector =gns3_server)
-    lab.get()
 
     listRouter = []
     setReseaux = {}
-    
-    #Create IP @ of networks
+
+    # Create IP @ of networks
     for i in range(4, 248, 4):
         setReseaux[int((i / 4) - 1)] = IPv4Address("10.16.1." + str(i))
 
@@ -187,6 +197,37 @@ if __name__ == '__main__':
                         router.interfaces[interfaceName]['ipNetwork'] = networkIp
                         router.interfaces[interfaceName]['ip'] = secondRouterIp
 
+
+    # TEST
+    print("TEST")
+    for router in listRouter:
+        if router.typeof == "PE":
+            print(router.showInfos())
+            for interfaceName in router.interfaces:
+                if router.interfaces[interfaceName]["isConnected"] == "true":
+                    if "routerConnectedName" in router.interfaces[interfaceName]:
+                        if router.interfaces[interfaceName]["RouterConnectedTypeof"] == "CE" :
+                            print(interfaceName)
+                            print("ip vrf "
+                                  + str((router.interfaces[interfaceName]["routerConnectedName"]))
+                                  + " \r\n")
+                            print("iciiiii" + str(numberInString(str(router.interfaces[interfaceName]["routerConnectedName"]))))
+                            print("rd "
+                                     + str(router.interfaces[interfaceName]["RouterConnectedAsnumber"])
+                                     + ":"
+                                     + str(numberInString(str(whichVrfFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]))))
+                                     + " \r\n")
+
+                            for rt in wichRtImportFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]):
+                                print("route-target import " + str(rt) + " \r\n")
+                            for rt in wichRtImportFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]):
+                                print("route-target export " + str(rt) + " \r\n")
+
+                            print("interface " + interfaceName + "\r\n")
+                            print("ip vrf forwarding " + str(router.interfaces[interfaceName]["routerConnectedName"]) + " \r\n")
+                            print("ip address " + str(router.interfaces[interfaceName]["ip"]) + " 255.255.255.252" + "\r\n")
+                time.sleep(0.1)
+
     # Add loopback address on router
     print("Add loopback address on router")
     for router in listRouter:
@@ -218,8 +259,7 @@ if __name__ == '__main__':
             if router.interfaces[interfaceName]["isConnected"] == "true" and interfaceName != "l0":
                 tn.write(b"interface " + interfaceName.encode('ascii') + b"\r\n")
                 tn.write(b"no shutdown \r\n")
-                tn.write(b"ip address " + str(router.interfaces[interfaceName]["ip"]).encode(
-                    'ascii') + b" 255.255.255.252" + b"\r\n")
+                tn.write(b"ip address " + str(router.interfaces[interfaceName]["ip"]).encode('ascii') + b" 255.255.255.252" + b"\r\n")
             time.sleep(0.1)
 
 
@@ -291,14 +331,17 @@ if __name__ == '__main__':
             tn.write(b"! Add eBGP between CE and PE \r\n")
             tn.write(b"end\r\n")
             tn.write(b"conf t \r\n")
-            tn.write(b"router bgp " + router.asNumber.encode('ascii') + b"\r\n")
+            tn.write(b"router bgp " + str(router.asNumber).encode('ascii') + b"\r\n")
             for interfaceName in router.interfaces:
                 if router.interfaces[interfaceName]["isConnected"] == "true":
                     if "RouterConnectedTypeof" in router.interfaces[interfaceName]:
                         if router.interfaces[interfaceName]["RouterConnectedTypeof"] == "PE":
-                            tn.write(b"neighbor " + str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode(
-                                'ascii') + b" remote-as " + str(router.interfaces[interfaceName]["RouterConnectedAsnumber"]).encode(
-                                'ascii') + b"\r\n")
+                            tn.write(b"neighbor "
+                                     + str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode('ascii')
+                                     + b" remote-as "
+                                     + str(router.interfaces[interfaceName]["RouterConnectedAsnumber"]).encode('ascii')
+                                     + b"\r\n")
+
                             tn.write(b"network " + str(router.interfaces[interfaceName]["ipNetwork"]).encode('ascii') + b" mask 255.255.255.252 \r\n")
                 time.sleep(0.1)
         elif router.typeof == "PE":
@@ -310,13 +353,20 @@ if __name__ == '__main__':
             for interfaceName in router.interfaces:
                 if router.interfaces[interfaceName]["isConnected"] == "true":
                     if "RouterConnectedTypeof" in router.interfaces[interfaceName]:
-                        if whichClientFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]) != "NOT A CLIENT":
-                            tn.write(b"address-family ipv4 vrf " + str(whichClientFromRouterName(router.interfaces[interfaceName]["routerConnectedName"])).encode('ascii') + b" \r\n")
-                            tn.write(b"neighbor " + str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode(
-                                'ascii') + b" remote-as " + str(router.interfaces[interfaceName]["RouterConnectedAsnumber"]).encode(
-                                'ascii') + b"\r\n")
-                            tn.write(b"neighbor " + str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode(
-                                'ascii') + b" activate \r\n")
+                        if "routerConnectedName" in router.interfaces[interfaceName]:
+                            tn.write(b"address-family ipv4 vrf "
+                                     + str(router.interfaces[interfaceName]["routerConnectedName"]).encode('ascii')
+                                     + b" \r\n")
+
+                            tn.write(b"neighbor "
+                                     + str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode('ascii')
+                                     + b" remote-as "
+                                     + str(router.interfaces[interfaceName]["RouterConnectedAsnumber"]).encode('ascii')
+                                     + b"\r\n")
+
+                            tn.write(b"neighbor " +
+                                     str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode('ascii')
+                                     + b" activate \r\n")
                 time.sleep(0.1)
 
 
@@ -348,22 +398,24 @@ if __name__ == '__main__':
             tn.write(b"end\r\n")
             tn.write(b"conf t \r\n")
 
-            tn.write(b"ip vrf Client_A \r\n")
-            tn.write(b"rd 100:100 \r\n")
-            tn.write(b"route-target import 100:100 \r\n")
-            tn.write(b"route-target export 100:100 \r\n")
-
-            tn.write(b"ip vrf Client_B \r\n")
-            tn.write(b"rd 200:200 \r\n")
-            tn.write(b"route-target import 200:200 \r\n")
-            tn.write(b"route-target export 200:200 \r\n")
-
             for interfaceName in router.interfaces:
                 if router.interfaces[interfaceName]["isConnected"] == "true":
-                    if "RouterConnectedTypeof" in router.interfaces[interfaceName]:
-                        if whichClientFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]) != "NOT A CLIENT":
+                    if "routerConnectedName" in router.interfaces[interfaceName]:
+                        if router.interfaces[interfaceName]["RouterConnectedTypeof"] == "CE" :
+                            tn.write(b"ip vrf " + str(router.interfaces[interfaceName]["routerConnectedName"]).encode('ascii') + b" \r\n")
+                            tn.write(b"rd "
+                                     + str(router.interfaces[interfaceName]["RouterConnectedAsnumber"]).encode('ascii')
+                                     + b":"
+                                     + str(numberInString(str(whichVrfFromRouterName(router.interfaces[interfaceName]["routerConnectedName"])))).encode('ascii')
+                                     + b" \r\n")
+
+                            for rt in wichRtImportFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]):
+                                tn.write(b"route-target import " + str(rt).encode('ascii') + b" \r\n")
+                            for rt in wichRtImportFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]):
+                                tn.write(b"route-target export " + str(rt).encode('ascii') + b" \r\n")
+
                             tn.write(b"interface " + interfaceName.encode('ascii') + b"\r\n")
-                            tn.write(b"ip vrf forwarding " + str(whichClientFromRouterName(router.interfaces[interfaceName]["routerConnectedName"])).encode('ascii') + b" \r\n")
+                            tn.write(b"ip vrf forwarding " + str(router.interfaces[interfaceName]["routerConnectedName"]).encode('ascii') + b" \r\n")
                             tn.write(b"ip address " + str(router.interfaces[interfaceName]["ip"]).encode('ascii') + b" 255.255.255.252" + b"\r\n")
                 time.sleep(0.1)
 
@@ -380,12 +432,16 @@ if __name__ == '__main__':
             for interfaceName in router.interfaces:
                 if router.interfaces[interfaceName]["isConnected"] == "true":
                     if "RouterConnectedTypeof" in router.interfaces[interfaceName]:
-                        if whichClientFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]) != "NOT A CLIENT":
-                            tn.write(b"address-family ipv4 vrf " + str(whichClientFromRouterName(
-                                router.interfaces[interfaceName]["routerConnectedName"])).encode('ascii') + b"\r\n")
+                        if whichVrfFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]) != "NOT A CLIENT":
+                            tn.write(b"address-family ipv4 vrf "
+                                     + str(router.interfaces[interfaceName]["routerConnectedName"]).encode('ascii')
+                                     + b"\r\n")
 
-                            tn.write(b"neighbor " + str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode(
-                                'ascii') + b" remote-as " + router.interfaces[interfaceName]["RouterConnectedAsnumber"].encode('ascii') + b"\r\n")
+                            tn.write(b"neighbor "
+                                     + str(router.interfaces[interfaceName]["RouterConnectedIp"]).encode('ascii')
+                                     + b" remote-as "
+                                     + str(router.interfaces[interfaceName]["RouterConnectedAsnumber"]).encode('ascii')
+                                     + b"\r\n")
                 time.sleep(0.1)
     for router in listRouter:
          router.showInfos()
