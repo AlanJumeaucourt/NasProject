@@ -498,9 +498,45 @@ def removeCeRouter(router):
     tn.write(b" \r\n")
 
 
-# Configuring router via telnet
-for router in listRouter:
-    autoAddConfigOnRouter(router)
+def removePRouter(router):
+
+    ListConnectedRouter = []
+    for interfaceName in router.interfaces:
+        if router.interfaces[interfaceName]["isConnected"] == "true" and interfaceName != "l0":
+            ListConnectedRouter.append(router.interfaces[interfaceName]["routerConnectedName"])
+
+    # delete default interface
+    for connectedRouter in ListConnectedRouter :
+        for router2 in listRouter:
+            if router2.name == connectedRouter:
+                for interfaceName in router2.interfaces:
+                    if router2.interfaces[interfaceName]["isConnected"] == "true" and "routerConnectedName" in router2.interfaces[interfaceName]:
+                        if router2.interfaces[interfaceName]["routerConnectedName"] == router.name :
+                            tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router2.name]["console_port"])
+                            tn.write(b"\r\n")
+                            tn.write(b"! removePRouter " + router2.name.encode('ascii') + b" \r\n")
+                            tn.write(b"end\r\n")
+                            tn.write(b"conf t \r\n")
+                
+                            tn.write(b"default interface " + interfaceName.encode('ascii') + b" \r\n")
+                    time.sleep(0.1)
+
+            
+
+    # erase config
+    tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
+    tn.write(b"\r\n")
+    tn.write(b"! removePRouter " + router.name.encode('ascii') + b"\r\n")
+    tn.write(b"end\r\n")
+    tn.write(b"conf t \r\n")
+    tn.write(b"config-register 0x2142 \r\n")
+    tn.write(b"end \r\n")
+    tn.write(b"reload \r\n")
+    time.sleep(0.25)
+    tn.write(b"y \r\n")
+    tn.write(b" \r\n")    
+
+
 
 # for router in listRouter:
 #     if router.name == "CER3":
