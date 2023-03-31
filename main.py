@@ -193,8 +193,6 @@ def addVrfOnPe(router, interfaceName):
                         tn.write(b"route-target import "
                                  + str(rt).encode('ascii')
                                  + b" \r\n")
-
-                    for rt in wichRtFromRouterName(router.interfaces[interfaceName]["routerConnectedName"]):
                         tn.write(b"route-target export "
                                  + str(rt).encode('ascii')
                                  + b" \r\n")
@@ -440,10 +438,73 @@ def autoRemoveConfigOnRouter(router):
     # If P : erase his config
     # If P : ? if the P is connected to a PE, what to do ? erase all config on the PE and CE ? or nothing else than previous.
 
+
+def removeCeRouter(router):
+
+    ListConnectedRouter = []
+    for interfaceName in router.interfaces:
+        if router.interfaces[interfaceName]["isConnected"] == "true" and interfaceName != "l0":
+            ListConnectedRouter.append(router.interfaces[interfaceName]["routerConnectedName"])
+
+    # delete VRF on his attached PE and default interface
+    for connectedRouter in ListConnectedRouter :
+        for router2 in listRouter:
+            if router2.name == connectedRouter:
+                for interfaceName in router2.interfaces:
+                    if router2.interfaces[interfaceName]["isConnected"] == "true" and "routerConnectedName" in router2.interfaces[interfaceName]:
+                        if router2.interfaces[interfaceName]["routerConnectedName"] == router.name :
+                            tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router2.name]["console_port"])
+                            tn.write(b"\r\n")
+                            tn.write(b"! removeCeRouter " + router2.name.encode('ascii') + b" VRF & interface \r\n")
+                            tn.write(b"end\r\n")
+                            tn.write(b"conf t \r\n")
+                            tn.write(b"no ip vrf " + router.name.encode('ascii') + b" \r\n")
+                            tn.write(b"default interface " + interfaceName.encode('ascii') + b" \r\n")
+                    time.sleep(0.1)
+
+            # delete RT if the CE have vpn route with other CE
+            elif router2.typeof == "PE":
+                for interfaceName in router2.interfaces:
+                    if "routerConnectedName" in router2.interfaces[interfaceName]:
+                        if router2.interfaces[interfaceName]["RouterConnectedTypeof"] == "CE":
+                            tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router2.name]["console_port"])
+                            tn.write(b"\r\n")
+                            tn.write(b"! removeCeRouter " + router2.name.encode('ascii') + b" RT \r\n")
+                            tn.write(b"end\r\n")
+                            tn.write(b"conf t \r\n")
+                            tn.write(b"ip vrf "
+                                     + str(router2.interfaces[interfaceName]["routerConnectedName"]).encode('ascii')
+                                     + b" \r\n")
+                            for rt in wichRtFromRouterName(router.name):
+                                tn.write(b"no route-target import "
+                                         + str(rt).encode('ascii')
+                                         + b" \r\n")
+                                tn.write(b"no route-target export "
+                                         + str(rt).encode('ascii')
+                                         + b" \r\n")
+                    time.sleep(0.1)
+
+    # erase config
+    tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
+    tn.write(b"\r\n")
+    tn.write(b"! removeCeRouter " + router.name.encode('ascii') + b" RT \r\n")
+    tn.write(b"end\r\n")
+    tn.write(b"conf t \r\n")
+    tn.write(b"config-register 0x2142 \r\n")
+    tn.write(b"end \r\n")
+    tn.write(b"reload \r\n")
+    time.sleep(0.25)
+    tn.write(b"y \r\n")
+    tn.write(b" \r\n")
+
+
 # Configuring router via telnet
 for router in listRouter:
     autoAddConfigOnRouter(router)
 
+# for router in listRouter:
+#     if router.name == "CER3":
+#         removeCeRouter(router)
 
 # for router in listRouter:
 #      router.showInfos()
