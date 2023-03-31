@@ -536,6 +536,20 @@ def removePRouter(router):
     tn.write(b"y \r\n")
     tn.write(b" \r\n")    
 
+def addPRouter(router):
+    AddLoopbackAddressOnRouter(router)
+    activateMplsOnPeAndPRouters(router)
+
+    for interfaceName in router.interfaces:
+        if router.interfaces[interfaceName]["isConnected"] == "true" and interfaceName != "l0":
+            addIpAddressOnConnectedInterfaces(router, interfaceName)
+            addOspfOnPeAndPRouters(router, interfaceName)
+            enableMplsOnPeAndPRouters(router, interfaceName)
+    
+    
+    
+
+
 
 
 # for router in listRouter:
