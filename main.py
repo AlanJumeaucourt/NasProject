@@ -509,4 +509,24 @@ for router in listRouter:
 # for router in listRouter:
 #      router.showInfos()
 # listRouter[0].showInfos()
+
+
+def autoAddConfigOnRouterCE(routerCE):
+    if routerCE.name == "CER6":
+        for interfaceNameCE in routerCE.interfaces:
+            if interfaceNameCE["isConnected"] == "true":
+                addIpAddressOnConnectedInterfaces(routerCE, interfaceNameCE)
+                if interfaceNameCE["RouterConnectedTypeof"] == "PE":
+                    routerPER = interfaceNameCE["RouterConnectedName"]
+                    for searchrouter in listRouter:
+                        if searchrouter == routerPER:
+                            for interfaceNamePER in searchrouter.interfaces:
+                                if interfaceNamePER["RouterConnectedName"] == "CER6":
+                                    addIpAddressOnConnectedInterfaces(searchrouter, interfaceNamePER)
+                                    addVrfOnPe(searchrouter, interfaceNamePER)
+                                    eBgpConfigurationOnPe(searchrouter, interfaceNamePER)
+                                    eBgpConfigurationOnCe(routerCE, interfaceNameCE)
+                                    iBgpConfigurationOnPe(searchrouter)
+                    
+
 print('Hello World')
