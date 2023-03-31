@@ -307,10 +307,12 @@ if __name__ == '__main__':
     with open("ConfigIntention.json", "r") as fileObject:
         jsonContent = fileObject.read()
         data = json.loads(jsonContent)
+    print(data)
+    
+    with open("data.json", "r") as fileObject:
+        jsonContent = fileObject.read()
+        olddataIP = json.loads(jsonContent, strict = False)
 
-    #Open json file and write in it
-    #with open('data.json', 'w') as fileObject:
-    #    json.dump(listRouter, fileObject)
 
     # Connect to GNS3 API
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
@@ -324,13 +326,15 @@ if __name__ == '__main__':
 
     listRouter = []
     listReseaux = []
-
+    listReseauxMem = []
+    
     # Create IP @ of networks
     for i in range(4, 248, 4):
         listReseaux.append(IPv4Address("10.16.1." + str(i)))
+        listReseauxMem.append("10.16.1." + str(i))
 
 
-    exit()
+    
     # Add object router in list with name and uid
     print("\nStarting list and create router object in listRouteur")
     for node in lab.nodes:
@@ -385,6 +389,7 @@ if __name__ == '__main__':
         firstRouterIp = listReseaux[0] + 1
         secondRouterIp = listReseaux[0] + 2
         listReseaux.remove(listReseaux[0])
+        listReseauxMem.remove(listReseauxMem[0])
 
         for router in listRouter:
             if router.name == firstRouterConnected:
@@ -506,8 +511,8 @@ def removeCeRouter(router):
 
 
 # Configuring router via telnet
-for router in listRouter:
-    autoAddConfigOnRouter(router)
+#for router in listRouter:
+#    autoAddConfigOnRouter(router)
 
 # for router in listRouter:
 #     if router.name == "CER3":
@@ -534,6 +539,15 @@ def autoAddConfigOnRouterCE(routerCE):
                                     eBgpConfigurationOnPe(searchrouter, interfaceNamePER)
                                     eBgpConfigurationOnCe(routerCE, interfaceNameCE)
                                     iBgpConfigurationOnPe(searchrouter)
-                    
+
+tab = ["Bonsoir","Aurevoir"]                    
+#Open json file and write in it
+with open('data.json', 'w') as fileObject:
+    json.dump(listReseauxMem, fileObject)
+#Open json file and read in it
+with open("data.json", "r") as fileObject:
+    jsonContent = fileObject.read()
+    olddataIP = json.loads(jsonContent, strict = False)
+
 
 print('Hello World')
