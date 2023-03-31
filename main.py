@@ -308,6 +308,9 @@ if __name__ == '__main__':
         jsonContent = fileObject.read()
         data = json.loads(jsonContent)
 
+    with open('data.json', 'w') as fileObject:
+        json.dump("YOUR LIST", fileObject)
+
     # Connect to GNS3 API
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
     nameProject = ""
