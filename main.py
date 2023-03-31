@@ -303,13 +303,14 @@ def iBgpConfigurationOnPe(router):
 # Project is to setup/automate an entire network with MPLS
 # Type of router : CE (Customer Edge), P(Provider), PE(Provider Edge)
 if __name__ == '__main__':
-    # Open json file
+    # Open json file and read in it
     with open("ConfigIntention.json", "r") as fileObject:
         jsonContent = fileObject.read()
         data = json.loads(jsonContent)
 
-    with open('data.json', 'w') as fileObject:
-        json.dump("YOUR LIST", fileObject)
+    #Open json file and write in it
+    #with open('data.json', 'w') as fileObject:
+    #    json.dump(listRouter, fileObject)
 
     # Connect to GNS3 API
     gns3_server = gns3fy.Gns3Connector("http://localhost:3080")
@@ -322,12 +323,14 @@ if __name__ == '__main__':
 
 
     listRouter = []
-    setReseaux = {}
+    listReseaux = []
 
     # Create IP @ of networks
     for i in range(4, 248, 4):
-        setReseaux[int((i / 4) - 1)] = IPv4Address("10.16.1." + str(i))
+        listReseaux.append(IPv4Address("10.16.1." + str(i)))
 
+
+    exit()
     # Add object router in list with name and uid
     print("\nStarting list and create router object in listRouteur")
     for node in lab.nodes:
@@ -378,9 +381,10 @@ if __name__ == '__main__':
               + " is connected to "
               + secondRouterConnected
               + link.nodes[1]['label']['text'])
-        networkIp = setReseaux[i]
-        firstRouterIp = setReseaux[i] + 1
-        secondRouterIp = setReseaux[i] + 2
+        networkIp = listReseaux[0]
+        firstRouterIp = listReseaux[0] + 1
+        secondRouterIp = listReseaux[0] + 2
+        listReseaux.remove(listReseaux[0])
 
         for router in listRouter:
             if router.name == firstRouterConnected:
@@ -509,8 +513,8 @@ for router in listRouter:
 #     if router.name == "CER3":
 #         removeCeRouter(router)
 
-# for router in listRouter:
-#      router.showInfos()
+for router in listRouter:
+     router.showInfos()
 # listRouter[0].showInfos()
 
 
