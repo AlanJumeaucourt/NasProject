@@ -533,3 +533,98 @@ def autoAddConfigOnRouterCE(routerCE):
                     
 
 print('Hello World')
+
+
+
+
+def removePErouter(router):
+
+    ListConnectedRouter = []
+    for interfaceName in router.interfaces:
+        if router.interfaces[interfaceName]["isConnected"] == "true" and interfaceName != "l0":
+            ListConnectedRouter.append(router.interfaces[interfaceName]["routerConnectedName"])
+
+    for router2 in listRouter:
+        if router2.typeof == "PE":
+            for interfaceName in router2.interfaces:
+                if "routerConnectedName" in router2.interfaces[interfaceName]:
+                    if router2.interfaces[interfaceName]["RouterConnectedTypeof"] == "CE":
+                        tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router2.name]["console_port"])
+                        tn.write(b"\r\n")
+                        tn.write(b"! removeCeRouter " + router2.name.encode('ascii') + b" RT \r\n")
+                        tn.write(b"end\r\n")
+                        tn.write(b"conf t \r\n")
+                        tn.write(b"ip vrf "
+                                + str(router2.interfaces[interfaceName]["routerConnectedName"]).encode('ascii')
+                                + b" \r\n")
+                        for rt in wichRtFromRouterName(router.name):
+                            tn.write(b"no route-target import "
+                                    + str(rt).encode('ascii')
+                                    + b" \r\n")
+                            tn.write(b"no route-target export "
+                                    + str(rt).encode('ascii')
+                                    + b" \r\n")
+                time.sleep(0.1)
+
+    for router3 in ListConnectedRouter:
+        if whichTypeOfRouterFromName(router.name) == "CE":
+            removeCeRouter(router3)
+        elif whichTypeOfRouterFromName(router.name) == "PE" or "P":
+            for router2 in listRouter:
+                if router2.name == ListConnectedRouter:
+                    for interfaceName in router2.interfaces:
+                        if router2.interfaces[interfaceName]["isConnected"] == "true" and "routerConnectedName" in router2.interfaces[interfaceName]:
+                            if router2.interfaces[interfaceName]["routerConnectedName"] == router.name :
+                                tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router2.name]["console_port"])
+                                tn.write(b"\r\n")
+                                tn.write(b"! removePRouter " + router2.name.encode('ascii') + b" \r\n")
+                                tn.write(b"end\r\n")
+                                tn.write(b"conf t \r\n")
+                    
+                                tn.write(b"default interface " + interfaceName.encode('ascii') + b" \r\n")
+                        time.sleep(0.1)
+ 
+
+
+
+
+    # erase config
+    tn = telnetlib.Telnet("localhost", lab.nodes_inventory()[router.name]["console_port"])
+    tn.write(b"\r\n")
+    tn.write(b"! removeCeRouter " + router.name.encode('ascii') + b" RT \r\n")
+    tn.write(b"end\r\n")
+    tn.write(b"conf t \r\n")
+    tn.write(b"config-register 0x2142 \r\n")
+    tn.write(b"end \r\n")
+    tn.write(b"reload \r\n")
+    time.sleep(0.25)
+    tn.write(b"y \r\n")
+    tn.write(b" \r\n")
+
+    
+def remove(router):
+    if whichTypeOfRouterFromName(router.name) == "CE":
+        removeCeRouter(router)
+    elif whichAsFromRouterName(router.name) == "PE":
+        removePErouter(router)
+    elif whichTypeOfRouterFromName(router.name) == "P":
+        removePRouter(router)
+
+
+
+def addPErouter(router):
+    AddLoopbackAddressOnRouter(router)
+    activateMplsOnPeAndPRouters(router)
+
+    for interfaceName in router.interfaces:
+        if router.interfaces[interfaceName]["isConnected"] == "true" and interfaceName != "l0":
+            if whichTypeOfRouterFromName(router.interfaces[interfaceName]['routerConnectedName']) == "P":
+                addIpAddressOnConnectedInterfaces(router, interfaceName)
+                addOspfOnPeAndPRouters(router, interfaceName)
+                enableMplsOnPeAndPRouters(router, interfaceName)
+                eBgpConfigurationOnPe(router, interfaceName)
+
+    
+    iBgpConfigurationOnPe(router)
+
+
