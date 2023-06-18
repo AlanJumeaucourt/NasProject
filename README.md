@@ -30,3 +30,12 @@ To do :
 - Customer router and wich customer specify in JSON
 - Personalize the Route-Target in a Client
 - RouteReflector ?
+
+
+## Authors
+
+- [@Zouzzou21](https://github.com/Zouzzou21)
+- [@AlanJumeaucourt](https://github.com/AlanJumeaucourt)
+- [@Ryad3](https://github.com/Ryad3)
+- [@Moovaa2 ](https://github.com/Moovaa2 )
+- [@Zinebhfs](https://github.com/Zinebhfs)
